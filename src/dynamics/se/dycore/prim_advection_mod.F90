@@ -321,7 +321,7 @@ contains
     use hybrid_mod, only : hybrid_t, get_loop_ranges
     implicit none
     type(element_t)     , intent(inout) :: elem(:)
-    integer             , intent(in   ) :: rkstage , n0_qdp , np1_qdp , nets , nete 
+    integer             , intent(in   ) :: rkstage , n0_qdp , np1_qdp , nets , nete
     type(hybrid_t) :: hybrid
     integer :: i,j,ie,q,k
     integer :: kbeg,kend,qbeg,qend
@@ -333,7 +333,7 @@ contains
     do ie=nets,nete
       do q=qbeg,qend
         do k=kbeg,kend
-          !OMP_COLLAPSE_SIMD 
+          !OMP_COLLAPSE_SIMD
           !DIR_VECTOR_ALIGNED
           do j=1,np
           do i=1,np
@@ -446,7 +446,7 @@ contains
     do ie = nets, nete
       ! add hyperviscosity to RHS.  apply to Q at timelevel n0, Qdp(n0)/dp
       do k = kbeg, kend
-        !OMP_COLLAPSE_SIMD 
+        !OMP_COLLAPSE_SIMD
         !DIR_VECTOR_ALIGNED
         do j=1,np
         do i=1,np
@@ -486,7 +486,7 @@ contains
       if ( nu_p > 0 ) then
         do ie = nets, nete
           do k = kbeg, kend
-            !OMP_COLLAPSE_SIMD 
+            !OMP_COLLAPSE_SIMD
             !DIR_VECTOR_ALIGNED
             do j=1,np
             do i=1,np
@@ -497,7 +497,7 @@ contains
           do q = qbeg,qend
             do k = kbeg, kend
               ! NOTE: divide by dp0 since we multiply by dp0 below
-              !OMP_COLLAPSE_SIMD 
+              !OMP_COLLAPSE_SIMD
               !DIR_VECTOR_ALIGNED
               do j=1,np
               do i=1,np
@@ -521,7 +521,7 @@ contains
       do ie = nets, nete
         do q = qbeg, qend
           do k = kbeg, kend
-            !OMP_COLLAPSE_SIMD 
+            !OMP_COLLAPSE_SIMD
             !DIR_VECTOR_ALIGNED
             do j=1,np
             do i=1,np
@@ -543,7 +543,7 @@ contains
       do ie = nets, nete
         do q = qbeg, qend
           do k = kbeg, kend
-            !OMP_COLLAPSE_SIMD 
+            !OMP_COLLAPSE_SIMD
             !DIR_VECTOR_ALIGNED
             do j=1,np
             do i=1,np
@@ -572,7 +572,7 @@ contains
     do k = kbeg, kend
       ! derived variable divdp_proj() (DSS'd version of divdp) will only be correct on 2nd and 3rd stage
       ! but that's ok because rhs_multiplier=0 on the first stage:
-      !OMP_COLLAPSE_SIMD 
+      !OMP_COLLAPSE_SIMD
       !DIR_VECTOR_ALIGNED
       do j=1,np
       do i=1,np
@@ -586,7 +586,7 @@ contains
         ! Note that the term dpdissk is independent of Q
         do k = kbeg, kend
           ! UN-DSS'ed dp at timelevel n0+1:
-          !OMP_COLLAPSE_SIMD 
+          !OMP_COLLAPSE_SIMD
           !DIR_VECTOR_ALIGNED
           do j=1,np
           do i=1,np
@@ -597,7 +597,7 @@ contains
             ! add contribution from UN-DSS'ed PS dissipation
 !            dpdiss(:,:) = ( hvcoord%hybi(k+1) - hvcoord%hybi(k) ) *
 !            elem(ie)%derived%psdiss_biharmonic(:,:)
-            !OMP_COLLAPSE_SIMD 
+            !OMP_COLLAPSE_SIMD
             !DIR_VECTOR_ALIGNED
             do j=1,np
             do i=1,np
@@ -619,7 +619,7 @@ contains
     do q = qbeg, qend
       do k = kbeg, kend
         ! div( U dp Q),
-        !OMP_COLLAPSE_SIMD 
+        !OMP_COLLAPSE_SIMD
         !DIR_VECTOR_ALIGNED
         do j=1,np
         do i=1,np
@@ -640,8 +640,8 @@ contains
         enddo
 
         ! optionally add in hyperviscosity computed above:
-        if ( rhs_viss /= 0 ) then 
-          !OMP_COLLAPSE_SIMD 
+        if ( rhs_viss /= 0 ) then
+          !OMP_COLLAPSE_SIMD
           !DIR_VECTOR_ALIGNED
           do j=1,np
           do i=1,np
@@ -662,7 +662,7 @@ contains
       ! dont do this earlier, since we allow np1_qdp == n0_qdp
       ! and we dont want to overwrite n0_qdp until we are done using it
       do k = kbeg, kend
-        !OMP_COLLAPSE_SIMD 
+        !OMP_COLLAPSE_SIMD
         !DIR_VECTOR_ALIGNED
         do j=1,np
         do i=1,np
@@ -693,7 +693,7 @@ contains
         if ( DSSopt == DSSdiv_vdp_ave ) DSSvar => elem(ie)%derived%divdp_proj(:,:,:)
         ! also DSS extra field
         do k = kbeg, kend
-          !OMP_COLLAPSE_SIMD 
+          !OMP_COLLAPSE_SIMD
           !DIR_VECTOR_ALIGNED
           do j=1,np
           do i=1,np
@@ -718,7 +718,7 @@ contains
         kptr = qsize*nlev + kbeg -1
         call edgeVunpack( edgeAdvp1 , DSSvar(:,:,kbeg:kend) , kblk , kptr , ie )
         do k = kbeg, kend
-           !OMP_COLLAPSE_SIMD 
+           !OMP_COLLAPSE_SIMD
            !DIR_VECTOR_ALIGNED
            do j=1,np
            do i=1,np
@@ -732,7 +732,7 @@ contains
       kptr = nlev*(q-1) + kbeg - 1
       call edgeVunpack( edgeAdvp1 , elem(ie)%state%Qdp(:,:,kbeg:kend,q,np1_qdp) , kblk , kptr , ie )
         do k = kbeg, kend
-          !OMP_COLLAPSE_SIMD 
+          !OMP_COLLAPSE_SIMD
           !DIR_VECTOR_ALIGNED
           do j=1,np
           do i=1,np
@@ -1037,7 +1037,7 @@ contains
                    elem(ie)%spherep(i,j)%lon*rad2deg,elem(ie)%spherep(i,j)%lat*rad2deg
               write(iulog,*) " "
               do k=1,nlev
-                write(iulog,'(A21,I5,A1,f12.8,3f8.2)') "k,dp_star_moist,u,v,T: ",k," ",dp_star_moist(i,j,k)/100.0_r8,&
+                write(iulog,'(A21,I5,A1,f16.12,3f10.2)') "k,dp_star_moist,u,v,T: ",k," ",dp_star_moist(i,j,k)/100.0_r8,&
                      elem(ie)%state%v(i,j,1,k,np1),elem(ie)%state%v(i,j,2,k,np1),elem(ie)%state%T(i,j,k,np1)
               end do
             end if
@@ -1112,14 +1112,14 @@ contains
             end do
           end do
         end do
-        if(ntrac>tracer_num_threads) then 
+        if(ntrac>tracer_num_threads) then
           call omp_set_nested(.true.)
           !$OMP PARALLEL NUM_THREADS(tracer_num_threads), DEFAULT(SHARED), PRIVATE(hybridnew2,qbeg,qend)
           hybridnew2 = config_thread_region(hybrid,'ctracer')
           call get_loop_ranges(hybridnew2, qbeg=qbeg, qend=qend)
           call remap1(fvm(ie)%c(1:nc,1:nc,:,1:ntrac),nc,qbeg,qend,ntrac,dpc_star, &
                       fvm(ie)%dp_fvm(1:nc,1:nc,:),ptop,0,.false.,kord_tr_cslam)
-          !$OMP END PARALLEL 
+          !$OMP END PARALLEL
           call omp_set_nested(.false.)
         else
           call remap1(fvm(ie)%c(1:nc,1:nc,:,1:ntrac),nc,1,ntrac,ntrac,dpc_star, &
