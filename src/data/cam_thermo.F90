@@ -526,7 +526,7 @@ CONTAINS
       real(kind_phys), optional, intent(in)  :: dp_dry(:, :)
       ! sum_species: sum species
       real(kind_phys),           intent(out) :: sum_species(:, :)
-      ! factor: to moist factor 
+      ! factor: to moist factor
       real(kind_phys), optional, intent(out) :: factor(:, :)
       ! Local variables
       real(kind_phys) :: factor_loc(SIZE(tracer, 1), SIZE(tracer, 2))
@@ -806,7 +806,7 @@ CONTAINS
               dp_dry(:, jdx, :), ptop, p00, inv_exner, exner(:, jdx, :))
         end if
      end do
-     
+
    end subroutine get_exner_2hd
 
    !===========================================================================
@@ -865,7 +865,7 @@ CONTAINS
      real(kind_phys), dimension(SIZE(tracer, 1), SIZE(tracer, 2))     :: pmid_local, t_v_local, dp_local, R_dry
      real(kind_phys), dimension(SIZE(tracer, 1), SIZE(tracer, 2) + 1) :: pint
      character(len=*), parameter                               :: subname = 'get_gz_from_dp_dry_ptop_temp_1hd: '
-     
+
 
      call get_pmid_from_dp(tracer, mixing_ratio, active_species_idx, &
                               dp_dry, ptop, pmid_local, pint=pint, dp=dp_local)
@@ -1006,7 +1006,7 @@ CONTAINS
    !
    subroutine get_ps_1hd(tracer_mass, active_species_idx, dp_dry, ps, ptop)
      use air_composition,  only: dry_air_species_num
-     
+
      real(kind_phys), intent(in)   :: tracer_mass(:,:,:)                      ! Tracer array (q*dp)
      real(kind_phys), intent(in)   :: dp_dry(:,:)                             ! dry pressure level thickness
      real(kind_phys), intent(out)  :: ps(:)                                   ! surface pressure

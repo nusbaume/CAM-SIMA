@@ -582,9 +582,9 @@ subroutine derived_phys_dry(cam_runtime_opts, phys_state, phys_tend)
    use cam_constituents,  only: const_qmin
    use runtime_obj,       only: wv_stdname
    use physics_types,     only: lagrangian_vertical
-   use physconst,         only: cpair, gravit, zvir, cappa
+   use physconst,         only: gravit
    use cam_thermo,        only: cam_thermo_update
-   use physics_types,     only: cpairv, rairv, zvirv
+   use physics_types,     only: cappav, cpairv, rairv, zvirv
    use physics_grid,      only: columns_on_task
    use geopotential_temp, only: geopotential_temp_run
    use static_energy,     only: update_dry_static_energy_run
@@ -721,7 +721,6 @@ subroutine derived_phys_dry(cam_runtime_opts, phys_state, phys_tend)
    do k = 1, nlev
       do i = 1, pcols
          phys_state%rpdel(i,k) = 1._kind_phys/phys_state%pdel(i,k)
-         phys_state%exner(i,k) = (phys_state%pint(i,pver+1)/phys_state%pmid(i,k))**cappa
       end do
    end do
 
@@ -793,6 +792,14 @@ subroutine derived_phys_dry(cam_runtime_opts, phys_state, phys_tend)
    call cam_thermo_update(const_data_ptr, phys_state%t, pcols, &
         cam_runtime_opts%update_thermodynamic_variables())
 
+   !Re-calculate exner function (use CCPP physics scheme?)
+   do k = 1, nlev
+      do i = 1, pcols
+         phys_state%exner(i,k) = (phys_state%pint(i,pver+1) / &
+                                  phys_state%pmid(i,k))**cappav(i,k)
+      end do
+   end do
+
    !Call geopotential_temp CCPP scheme:
    call geopotential_temp_run(pver, lagrangian_vertical, pver, 1,                        &
                               pverp, 1, num_advected, phys_state%lnpint,                 &
@@ -823,7 +830,7 @@ subroutine thermodynamic_consistency(phys_state, const_data_ptr, phys_tend, ncol
    ! dynamics.
    ! Note: mixing ratios are assumed to be dry.
    !
-   use physconst,         only: cpair
+   use physics_types,     only: cpairv
    use air_composition,   only: get_cp
 
    ! SE dycore:
@@ -848,7 +855,8 @@ subroutine thermodynamic_consistency(phys_state, const_data_ptr, phys_tend, ncol
      !
      call get_cp(const_data_ptr(1:ncols,1:pver,1:num_advected),.true.,inv_cp)
 
-     phys_tend%dTdt_total(1:ncols,1:pver) = phys_tend%dTdt_total(1:ncols,1:pver)*cpair*inv_cp
+     phys_tend%dTdt_total(1:ncols,1:pver) = phys_tend%dTdt_total(1:ncols,1:pver) * &
+                                            cpairv(1:ncols,1:pver) * inv_cp
    end if
 end subroutine thermodynamic_consistency
 

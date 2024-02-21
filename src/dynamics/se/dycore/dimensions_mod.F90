@@ -62,8 +62,8 @@ module dimensions_mod
   integer, allocatable, public :: kord_tr(:), kord_tr_cslam(:)
 
   real(r8), allocatable, public :: nu_scale_top(:) ! scaling of del2 viscosity in sponge layer (initialized in dyn_comp)
-  real(r8), allocatable, public :: nu_lev(:)
-  real(r8), allocatable, public :: otau(:)
+  real(r8), allocatable, public :: nu_lev(:)       ! level dependent del4 (u,v) damping
+  real(r8), allocatable, public :: nu_t_lev(:)     ! level dependent del4 T damping
 
   integer,  public :: ksponge_end       ! sponge is active k=1,ksponge_end
   real (r8), allocatable, public :: nu_div_lev(:) ! scaling of viscosity in sponge layer
@@ -157,8 +157,8 @@ contains
      call check_allocate(iret, subname, 'nu_lev(nlev)', &
                          file=__FILE__, line=__LINE__)
 
-     allocate(otau(nlev), stat=iret)
-     call check_allocate(iret, subname, 'otau(nlev)', &
+     allocate(nu_t_lev(nlev), stat=iret)
+     call check_allocate(iret, subname, 'nu_t_lev(nlev)', &
                          file=__FILE__, line=__LINE__)
 
      allocate(nu_div_lev(nlev), stat=iret)
