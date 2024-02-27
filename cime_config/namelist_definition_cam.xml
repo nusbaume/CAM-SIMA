@@ -170,6 +170,24 @@
       <value>UNSET_PATH</value>
     </values>
   </entry>
+  <entry id="scale_dry_air_mass">
+    <type>real</type>
+    <category>initial_conditions</category>
+    <group>cam_initfiles_nl</group>
+    <desc>
+      Specify whether and how to perform dry surface pressure scaling.
+      If less than or equal to 0.0, do not perform scaling.
+      If greater than 0.0, perform scaling to scale_dry_air_mass
+      value (in Pa) as the average dry surface pressure target.
+    </desc>
+    <values>
+      <value>0.0</value>
+      <value aquaplanet="1">101080.0</value>
+      <value phys_suite="cam4">98288.0</value>
+      <value phys_suite="cam5">98288.0</value>
+      <value phys_suite="cam6">98288.0</value>
+    </values>
+  </entry>
   <entry id="unset_path_str">
     <type>char*80</type>
     <category>initial_conditions</category>

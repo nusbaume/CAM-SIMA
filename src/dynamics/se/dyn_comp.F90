@@ -9,7 +9,7 @@ use cam_constituents,       only: const_name, const_longname, num_advected
 use cam_constituents,       only: const_get_index, const_is_wet, const_qmin
 use cam_constituents,       only: readtrace
 use air_composition,        only: const_is_water_species
-use cam_control_mod,        only: initial_run, simple_phys
+use cam_control_mod,        only: initial_run
 use cam_initfiles,          only: initial_file_get_id, topo_file_get_id, pertlim
 use dyn_grid,               only: ini_grid_name, timelevel, hvcoord, edgebuf
 
@@ -567,6 +567,9 @@ subroutine dyn_init(cam_runtime_opts, dyn_in, dyn_out)
    use cam_pio_utils,      only: clean_iodesc_list
    use air_composition,    only: thermodynamic_active_species_num, thermodynamic_active_species_idx
    use air_composition,    only: thermodynamic_active_species_idx_dycore
+   use air_composition,    only: thermodynamic_active_species_liq_idx, thermodynamic_active_species_ice_idx
+   use air_composition,    only: thermodynamic_active_species_liq_idx_dycore, thermodynamic_active_species_ice_idx_dycore
+   use air_composition,    only: thermodynamic_active_species_liq_num, thermodynamic_active_species_ice_num
    use dynconst,           only: cpair
    use dyn_thermo,         only: get_molecular_diff_coef_reference
    !use cam_history,        only: addfld, add_default, horiz_only, register_vector_field
@@ -586,13 +589,14 @@ subroutine dyn_init(cam_runtime_opts, dyn_in, dyn_out)
    use test_fvm_mapping,   only: test_mapping_addfld
    use control_mod,        only: vert_remap_uvTq_alg, vert_remap_tracer_alg
    use std_atm_provile,    only: std_atm_height
+   use dyn_tests_utils,    only: vc_dycore, vc_dry_pressure, string_vc, vc_str_lgth
    ! Dummy arguments:
    type(runtime_options), intent(in)  :: cam_runtime_opts
    type(dyn_import_t),    intent(out) :: dyn_in
    type(dyn_export_t),    intent(out) :: dyn_out
 
    ! Local variables
-   integer             :: ithr, nets, nete, ie, k, kmol_end
+   integer             :: ithr, nets, nete, ie, k, kmol_end, mfound
    real(r8), parameter :: Tinit = 300.0_r8
    real(r8)            :: press(1), ptop, tref, z(1)
 
@@ -603,8 +607,9 @@ subroutine dyn_init(cam_runtime_opts, dyn_in, dyn_out)
    integer :: iret
 
    ! variables for initializing energy and axial angular momentum diagnostics
-   character (len = 3), dimension(12) :: stage = (/"dED","dAF","dBD","dAD","dAR","dBF","dBH","dCH","dAH",'dBS','dAS','p2d'/)
-   character (len = 70),dimension(12) :: stage_txt = (/&
+   integer, parameter                         :: num_stages = 12, num_vars = 8
+   character (len = 3), dimension(num_stages) :: stage = (/"dED","dAF","dBD","dAD","dAR","dBF","dBH","dCH","dAH",'dBS','dAS','p2d'/)
+   character (len = 70),dimension(num_stages) :: stage_txt = (/&
       " end of previous dynamics                           ",& !dED
       " from previous remapping or state passed to dynamics",& !dAF - state in beginning of nsplit loop
       " state after applying CAM forcing                   ",& !dBD - state after applyCAMforcing
@@ -618,25 +623,26 @@ subroutine dyn_init(cam_runtime_opts, dyn_in, dyn_out)
       " state after sponge layer diffusion                 ",& !dAS - state after sponge del2
       " phys2dyn mapping errors (requires ftype-1)         " & !p2d - for assessing phys2dyn mapping errors
       /)
-   character (len = 2)  , dimension(8) :: vars  = (/"WV"  ,"WL"  ,"WI"  ,"SE"   ,"KE"   ,"MR"   ,"MO"   ,"TT"   /)
+   character (len = 2)  , dimension(num_vars) :: vars  = (/"WV"  ,"WL"  ,"WI"  ,"SE"   ,"KE"   ,"MR"   ,"MO"   ,"TT"   /)
    !if ntrac>0 then tracers should be output on fvm grid but not energy (SE+KE) and AAM diags
-   logical              , dimension(8) :: massv = (/.true.,.true.,.true.,.false.,.false.,.false.,.false.,.false./)
-   character (len = 70) , dimension(8) :: vars_descriptor = (/&
+   logical              , dimension(num_vars) :: massv = (/.true.,.true.,.true.,.false.,.false.,.false.,.false.,.false./)
+   character (len = 70) , dimension(num_vars) :: vars_descriptor = (/&
       "Total column water vapor                ",&
       "Total column cloud water                ",&
       "Total column cloud ice                  ",&
-      "Total column dry static energy          ",&
+      "Total column static energy              ",&
       "Total column kinetic energy             ",&
       "Total column wind axial angular momentum",&
       "Total column mass axial angular momentum",&
       "Total column test tracer                "/)
-   character (len = 14), dimension(8)  :: &
+   character (len = 14), dimension(num_vars)  :: &
       vars_unit = (/&
       "kg/m2        ","kg/m2        ","kg/m2        ","J/m2         ",&
       "J/m2         ","kg*m2/s*rad2 ","kg*m2/s*rad2 ","kg/m2        "/)
 
    integer :: istage, ivars
-   character (len=108) :: str1, str2, str3
+   character (len=108)         :: str1, str2, str3
+   character (len=vc_str_lgth) :: vc_str
 
    logical :: history_budget      ! output tendencies and state variables for budgets
    integer :: budget_hfile_num
@@ -645,6 +651,11 @@ subroutine dyn_init(cam_runtime_opts, dyn_in, dyn_out)
 
    real(r8) :: km_sponge_factor_local(nlev+1)
    !----------------------------------------------------------------------------
+   vc_dycore = vc_dry_pressure
+   if (masterproc) then
+     call string_vc(vc_dycore,vc_str)
+     write(iulog,*) sub//': vertical coordinate dycore   : ',trim(vc_str)
+   end if
 
    ! Now allocate and set condenstate vars
    allocate(cnst_name_gll(qsize), stat=iret) ! constituent names for gll tracers
@@ -701,6 +712,35 @@ subroutine dyn_init(cam_runtime_opts, dyn_in, dyn_out)
        cnst_name_gll    (m)                = const_name    (m)
        cnst_longname_gll(m)                = const_longname(m)
 
+     end if
+   end do
+
+   do m=1,thermodynamic_active_species_liq_num
+     if (ntrac>0) then
+       do mfound=1,qsize
+         if (TRIM(cnst_name(thermodynamic_active_species_liq_idx(m)))==TRIM(cnst_name_gll(mfound))) then
+           thermodynamic_active_species_liq_idx_dycore(m) = mfound
+         end if
+       end do
+     else
+       thermodynamic_active_species_liq_idx_dycore(m) = thermodynamic_active_species_liq_idx(m)
+     end if
+     if (masterproc) then
+       write(iulog,*) sub//": m,thermodynamic_active_species_idx_liq_dycore: ",m,thermodynamic_active_species_liq_idx_dycore(m)
+     end if
+   end do
+   do m=1,thermodynamic_active_species_ice_num
+     if (ntrac>0) then
+       do mfound=1,qsize
+         if (TRIM(cnst_name(thermodynamic_active_species_ice_idx(m)))==TRIM(cnst_name_gll(mfound))) then
+           thermodynamic_active_species_ice_idx_dycore(m) = mfound
+         end if
+       end do
+     else
+       thermodynamic_active_species_ice_idx_dycore(m) = thermodynamic_active_species_ice_idx(m)
+     end if
+     if (masterproc) then
+       write(iulog,*) sub//": m,thermodynamic_active_species_idx_ice_dycore: ",m,thermodynamic_active_species_ice_idx_dycore(m)
      end if
    end do
 
@@ -866,18 +906,18 @@ subroutine dyn_init(cam_runtime_opts, dyn_in, dyn_out)
      call addfld ('TT_PDC',   horiz_only, 'A', 'kg/m2','Total column test tracer lost in physics-dynamics coupling',gridname='GLL')
    end if
 
-   do istage = 1,SIZE(stage)
-      do ivars=1,SIZE(vars)
-         write(str1,*) TRIM(ADJUSTL(vars(ivars))),TRIM(ADJUSTL("_")),TRIM(ADJUSTL(stage(istage)))
-         write(str2,*) TRIM(ADJUSTL(vars_descriptor(ivars))),&
-             TRIM(ADJUSTL(" ")),TRIM(ADJUSTL(stage_txt(istage)))
-         write(str3,*) TRIM(ADJUSTL(vars_unit(ivars)))
-         if (ntrac>0.and.massv(ivars)) then
-           call addfld (TRIM(ADJUSTL(str1)),   horiz_only, 'A', TRIM(ADJUSTL(str3)),TRIM(ADJUSTL(str2)),gridname='FVM')
-         else
-           call addfld (TRIM(ADJUSTL(str1)),   horiz_only, 'A', TRIM(ADJUSTL(str3)),TRIM(ADJUSTL(str2)),gridname='GLL')
-         end if
-      end do
+   do istage = 1, num_stages
+     do ivars=1, num_vars
+       write(str1,*) TRIM(ADJUSTL(vars(ivars))),TRIM(ADJUSTL("_")),TRIM(ADJUSTL(stage(istage)))
+       write(str2,*) TRIM(ADJUSTL(vars_descriptor(ivars))), " ", &
+                           TRIM(ADJUSTL(" ")),TRIM(ADJUSTL(stage_txt(istage)))
+       write(str3,*) TRIM(ADJUSTL(vars_unit(ivars)))
+       if (ntrac>0.and.massv(ivars)) then
+         call addfld (TRIM(ADJUSTL(str1)),   horiz_only, 'A', TRIM(ADJUSTL(str3)),TRIM(ADJUSTL(str2)),gridname='FVM')
+       else
+         call addfld (TRIM(ADJUSTL(str1)),   horiz_only, 'A', TRIM(ADJUSTL(str3)),TRIM(ADJUSTL(str2)),gridname='GLL')
+       end if
+    end do
    end do
 
    !
@@ -1135,6 +1175,7 @@ end subroutine dyn_final
 subroutine read_inidat(dyn_in)
    use air_composition,      only: thermodynamic_active_species_num, dry_air_species_num
    use air_composition,      only: thermodynamic_active_species_idx
+   use cam_initfiles,        only: scale_dry_air_mass
    use shr_sys_mod,          only: shr_sys_flush
    use hycoef,               only: hyai, hybi, ps0
    use phys_vars_init_check, only: mark_as_initialized
@@ -1709,21 +1750,15 @@ subroutine read_inidat(dyn_in)
       end do
    end if
 
-   ! scale PS to achieve prescribed dry mass following FV dycore (dryairm.F90)
-#ifndef planet_mars
+   ! If scale_dry_air_mass > 0.0 then scale dry air mass to scale_dry_air_mass global average dry pressure
    if (runtype == 0) then
-      initial_global_ave_dry_ps = 98288.0_r8
-      if (.not. associated(fh_topo)) then
-         initial_global_ave_dry_ps = 101325._r8 - 245._r8
-      end if
-      if (simple_phys) then
-         initial_global_ave_dry_ps = 0                  !do not scale psdry
-      end if
-      if (iam < par%nprocs) then
-        call prim_set_dry_mass(elem, hvcoord, initial_global_ave_dry_ps, qtmp)
-      end if
-   endif
-#endif
+     if (scale_dry_air_mass > 0.0_r8) then
+       if (iam < par%nprocs) then
+         call prim_set_dry_mass(elem, hvcoord, scale_dry_air_mass, qtmp)
+       end if
+     end if
+   end if
+
    ! store Q values:
    !
    ! if CSLAM is NOT active then state%Qdp for all constituents

@@ -113,6 +113,7 @@ CONTAINS
       use spmd_utils,      only: masterproc, mpicom, masterprocid
       use mpi,             only: mpi_real8
       use cam_logfile,     only: iulog
+      use dyn_tests_utils, only: vc_physics, string_vc, vc_moist_pressure, vc_str_lgth
       use runtime_obj,     only: unset_real
 
       ! Dummy argument: filepath for file containing namelist input
@@ -144,6 +145,8 @@ CONTAINS
       real(kind_phys)             :: user_defined_rearth
       real(kind_phys)             :: user_defined_tmelt
       real(kind_phys)             :: user_defined_omega
+
+      character (len=vc_str_lgth) :: vc_str
 
       ! Physical constants needing to be reset
       !    (e.g., for aqua planet experiments)
@@ -286,6 +289,15 @@ CONTAINS
       end if
 
       ez = omega / sqrt(0.375_kind_phys)
+
+      !
+      ! vertical coordinate info
+      !
+      vc_physics = vc_moist_pressure
+      if (masterproc) then
+        call string_vc(vc_physics, vc_str)
+        write(iulog,*)'vertical coordinate physics : ',trim(vc_str)
+      end if
 
    end subroutine physconst_readnl
 

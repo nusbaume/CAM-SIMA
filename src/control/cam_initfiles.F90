@@ -44,6 +44,8 @@ module cam_initfiles
    ! cam_branch_file: Filepath of primary restart file for a branch run
    character(len=cl) :: cam_branch_file = ' '
 
+   real(r8), public, protected :: scale_dry_air_mass = 0.0_r8 ! Target avg air mass (in Pa) for dycore
+
    ! rest_pfile: The restart pointer file contains name of most recently
    !             written primary restart file.
    !             The contents of this file are updated by cam_write_restart
@@ -89,7 +91,7 @@ CONTAINS
       character(len=*), parameter :: subname = 'cam_initfiles_readnl'
 
       namelist /cam_initfiles_nl/ ncdata, bnd_topo, pertlim, cam_branch_file, &
-         unset_path_str
+         scale_dry_air_mass, unset_path_str
       !------------------------------------------------------------------------
 
       if (masterproc) then
@@ -121,6 +123,10 @@ CONTAINS
            mstrid, mpicom, ierr)
       if (ierr /= 0) then
          call endrun(subname//": ERROR: mpi_bcast: cam_branch_file")
+      end if
+      call mpi_bcast(scale_dry_air_mass, 1, mpi_real8, mstrid, mpicom, ierr)
+      if (ierr /= 0) then
+         call endrun(sub//": ERROR: mpi_bcast: scale_dry_air_mass")
       end if
       call mpi_bcast(unset_path_str, len(unset_path_str), mpi_character,      &
            mstrid, mpicom, ierr)
@@ -199,7 +205,14 @@ CONTAINS
          write(iulog,*) '  Maximum abs value of scale factor used to ',       &
               'perturb initial conditions, pertlim= ', pertlim
 
-      end if
+         if (scale_dry_air_mass > 0) then
+            write(iulog,*) &
+              '  Initial condition dry mass will be scaled to: ',scale_dry_air_mass,' Pa'
+         else
+            write(iulog,*) &
+              '  Initial condition dry mass will not be scaled.'
+         end if
+      end if !MPI root processor
 
    end subroutine cam_initfiles_readnl
 
