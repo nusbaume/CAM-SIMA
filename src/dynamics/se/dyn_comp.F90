@@ -11,7 +11,8 @@ use cam_constituents,       only: readtrace
 use air_composition,        only: const_is_water_species
 use cam_control_mod,        only: initial_run
 use cam_initfiles,          only: initial_file_get_id, topo_file_get_id, pertlim
-use dyn_grid,               only: ini_grid_name, timelevel, hvcoord, edgebuf
+use dyn_grid,               only: ini_grid_name, timelevel, hvcoord, edgebuf, &
+                                  ini_grid_hdim_name
 
 use cam_grid_support,       only: cam_grid_id, cam_grid_get_gcid, &
                                   cam_grid_dimensions, cam_grid_get_dim_names, &
@@ -1218,7 +1219,7 @@ subroutine read_inidat(dyn_in)
    integer                          :: kptr, m_cnst
    type(EdgeBuffer_t)               :: edge
 
-   character(len=max_fieldname_len) :: dimname, varname
+   character(len=max_fieldname_len) :: varname
    integer                          :: ierr
 
    integer                          :: rndm_seed_sz
@@ -1401,7 +1402,7 @@ subroutine read_inidat(dyn_in)
                           file=__FILE__, line=__LINE__)
 
       ! Check that number of columns in IC file matches grid definition.
-      call check_file_layout(fh_ini, elem, dyn_cols, 'ncdata', .true., dimname)
+      call check_file_layout(fh_ini, elem, dyn_cols, 'ncdata', .true.)
 
       ! Read 2-D field
 
@@ -1409,10 +1410,10 @@ subroutine read_inidat(dyn_in)
       fieldname2 = 'PSDRY'
       if (dyn_field_exists(fh_ini, trim(fieldname), required=.false.)) then
          inic_wet = .true.
-         call read_dyn_var(trim(fieldname), fh_ini, dimname, dbuf2)
+         call read_dyn_var(trim(fieldname), fh_ini, ini_grid_hdim_name, dbuf2)
       elseif (dyn_field_exists(fh_ini, trim(fieldname2), required=.false.)) then
          inic_wet = .false.
-         call read_dyn_var(trim(fieldname2), fh_ini, dimname, dbuf2)
+         call read_dyn_var(trim(fieldname2), fh_ini, ini_grid_hdim_name, dbuf2)
       else
          call endrun(trim(subname)//': PS or PSDRY must be on GLL grid')
       end if
@@ -1436,7 +1437,7 @@ subroutine read_inidat(dyn_in)
       ! Read in 3-D fields
 
       if (dyn_field_exists(fh_ini, 'U')) then
-         call read_dyn_var('U', fh_ini, dimname, dbuf3)
+         call read_dyn_var('U', fh_ini, ini_grid_hdim_name, dbuf3)
       else
          call endrun(trim(subname)//': U not found')
       end if
@@ -1452,7 +1453,7 @@ subroutine read_inidat(dyn_in)
       end do
 
       if (dyn_field_exists(fh_ini, 'V')) then
-         call read_dyn_var('V', fh_ini, dimname, dbuf3)
+         call read_dyn_var('V', fh_ini, ini_grid_hdim_name, dbuf3)
       else
          call endrun(trim(subname)//': V not found')
       end if
@@ -1467,7 +1468,7 @@ subroutine read_inidat(dyn_in)
       end do
 
       if (dyn_field_exists(fh_ini, 'T')) then
-         call read_dyn_var('T', fh_ini, dimname, dbuf3)
+         call read_dyn_var('T', fh_ini, ini_grid_hdim_name, dbuf3)
       else
          call endrun(trim(subname)//': T not found')
       end if
@@ -1546,7 +1547,7 @@ subroutine read_inidat(dyn_in)
    do m_cnst = 1, num_advected
       if (readtrace .and. .not. const_is_water_species(m_cnst)) then
          if (dyn_field_exists(fh_ini, trim(const_name(m_cnst)), required=.false.)) then
-            call check_file_layout(fh_ini, elem, dyn_cols, 'ncdata', .true., dimname)
+            call check_file_layout(fh_ini, elem, dyn_cols, 'ncdata', .true.)
             exit
          end if
       end if
@@ -1566,7 +1567,7 @@ subroutine read_inidat(dyn_in)
       end if
 
       if (found) then
-         call read_dyn_var(trim(const_name(m_cnst)), fh_ini, dimname, dbuf3)
+         call read_dyn_var(trim(const_name(m_cnst)), fh_ini, ini_grid_hdim_name, dbuf3)
       else
          !call cnst_init_default(m_cnst, latvals, lonvals, dbuf3, pmask)
       end if
@@ -2143,7 +2144,7 @@ end subroutine set_phis
 
 !========================================================================================
 
-subroutine check_file_layout(file, elem, dyn_cols, file_desc, dyn_ok, dimname)
+subroutine check_file_layout(file, elem, dyn_cols, file_desc, dyn_ok)
 
    ! This routine is only called when data will be read from the initial file.  It is not
    ! called when the initial file is only supplying vertical coordinate info.
@@ -2153,7 +2154,6 @@ subroutine check_file_layout(file, elem, dyn_cols, file_desc, dyn_ok, dimname)
    integer,           intent(in)    :: dyn_cols
    character(len=*),  intent(in)    :: file_desc
    logical,           intent(in)    :: dyn_ok ! .true. iff ncol_d is okay
-   character(len=*),  intent(out)   :: dimname
 
    integer                          :: ncol_did, ncol_size
    integer                          :: ierr
@@ -2162,18 +2162,22 @@ subroutine check_file_layout(file, elem, dyn_cols, file_desc, dyn_ok, dimname)
    integer                          :: indx
    real(r8)                         :: dbuf2(npsq, nelemd)
    logical                          :: found
-   character(len=max_fieldname_len) :: dimname2, coordname
+   character(len=max_fieldname_len) :: coordname
 
    character(len=*), parameter      :: subname = 'check_file_layout'
    !----------------------------------------------------------------------------
 
+   ! Check that horizontal dimension name exists:
+    if (trim(ini_grid_hdim_name) == 'none') then
+      call endrun(sub//': ERROR: no horizontal dimension in initial data file. &
+         &Cannot read data from file')
+   end if   
+
    ! Check that number of columns in IC file matches grid definition.
 
-   call cam_grid_get_dim_names(cam_grid_id(ini_grid_name), dimname, dimname2)
-
-   ierr = pio_inq_dimid(file, trim(dimname), ncol_did)
+   ierr = pio_inq_dimid(file, trim(ini_grid_hdim_name), ncol_did)
    if (ierr /= PIO_NOERR) then
-      call endrun(subname//': ERROR: either ncol or ncol_d dimension not found in ' &
+      call endrun(subname//': ERROR: '//trim(ini_grid_hdim_name)//' dimension not found in ' &
          //trim(file_desc)//' file')
    end if
 
@@ -2183,18 +2187,18 @@ subroutine check_file_layout(file, elem, dyn_cols, file_desc, dyn_ok, dimname)
          write(iulog, '(a,2(a,i0))') trim(subname), ': ncol_size=', ncol_size, &
              ' : dyn_cols=', dyn_cols
       end if
-      call endrun(subname//': ERROR: dimension ncol size not same as in ncdata file')
+      call endrun(subname//': ERROR: dimension '//trim(ini_grid_hdim_name)//' size not same as in ncdata file')
    end if
 
-   ! Set coordinate name associated with dimname.
-   if (dimname == 'ncol') then
+   ! Set coordinate name associated with ini_grid_hdim_name.
+   if (trim(ini_grid_hdim_name) == 'ncol') then
       coordname = 'lat'
    else
       coordname = 'lat_d'
    end if
 
     !! Check to make sure file is in correct order
-   call read_dyn_var(coordname, file, dimname, dbuf2)
+   call read_dyn_var(coordname, file, ini_grid_hdim_name, dbuf2)
    found = .true.
    do ie = 1, nelemd
       indx = 1
@@ -2220,13 +2224,13 @@ subroutine check_file_layout(file, elem, dyn_cols, file_desc, dyn_ok, dimname)
       call endrun("ncdata file latitudes not in correct column order")
    end if
 
-   if (dimname == 'ncol') then
+   if (trim(ini_grid_hdim_name) == 'ncol') then
       coordname = 'lon'
    else
       coordname = 'lon_d'
    end if
 
-   call read_dyn_var(coordname, file, dimname, dbuf2)
+   call read_dyn_var(coordname, file, ini_grid_hdim_name, dbuf2)
    do ie = 1, nelemd
       indx = 1
       do j = 1, np
