@@ -593,7 +593,6 @@ subroutine derived_phys_dry(cam_runtime_opts, phys_state, phys_tend)
    use hycoef,            only: hyai, ps0
    use shr_vmath_mod,     only: shr_vmath_log
    use shr_kind_mod,      only: shr_kind_cx
-   use dyn_comp,          only: ixo, ixo2, ixh, ixh2
 
    ! arguments
    type(runtime_options), intent(in)    :: cam_runtime_opts ! Runtime settings object
@@ -743,37 +742,12 @@ subroutine derived_phys_dry(cam_runtime_opts, phys_state, phys_tend)
       end do
    end do
 
-   !------------------------------------------------------------
-   ! Ensure O2 + O + H (N2) mmr greater than one.
-   ! Check for unusually large H2 values and set to lower value.
-   !------------------------------------------------------------
    if (cam_runtime_opts%waccmx_option() == 'ionosphere' .or. &
        cam_runtime_opts%waccmx_option() == 'neutral')  then
-
-      do i=1,pcols
-         do k=1,pver
-
-            if (const_data_ptr(i,k,ixo) < mmrMin) const_data_ptr(i,k,ixo) = mmrMin
-            if (const_data_ptr(i,k,ixo2) < mmrMin) const_data_ptr(i,k,ixo2) = mmrMin
-
-            mmrSum_O_O2_H = const_data_ptr(i,k,ixo)+const_data_ptr(i,k,ixo2)+const_data_ptr(i,k,ixh)
-
-            if ((1._r8-mmrMin-mmrSum_O_O2_H) < 0._r8) then
-
-               const_data_ptr(i,k,ixo) = const_data_ptr(i,k,ixo) * (1._r8 - N2mmrMin) / mmrSum_O_O2_H
-
-               const_data_ptr(i,k,ixo2) = const_data_ptr(i,k,ixo2) * (1._r8 - N2mmrMin) / mmrSum_O_O2_H
-
-               const_data_ptr(i,k,ixh) = const_data_ptr(i,k,ixh) * (1._r8 - N2mmrMin) / mmrSum_O_O2_H
-
-            endif
-
-            if(const_data_ptr(i,k,ixh2) .gt. 6.e-5_r8) then
-               const_data_ptr(i,k,ixh2) = 6.e-5_r8
-            endif
-
-         end do
-      end do
+      !------------------------------------------------------------
+      ! Apply limiters to mixing ratios of major species
+      !------------------------------------------------------------
+      !call physics_cnst_limit( phys_state(lchnk) ) !<-Need to CCPP-ize before WACCM-X is enabled.
    endif
 
    ! Ensure tracers are all greater than or equal to their

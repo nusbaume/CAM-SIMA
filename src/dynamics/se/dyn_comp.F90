@@ -73,13 +73,6 @@ end type dyn_export_t
 ! Namelist
 logical, public, protected :: write_restart_unstruct
 
-! constituent indices for waccm-x dry air properties
-integer, public, protected :: &
-   ixo  = -1, &
-   ixo2 = -1, &
-   ixh  = -1, &
-   ixh2 = -1
-
 interface read_dyn_var
   module procedure read_dyn_field_2d
   module procedure read_dyn_field_3d
@@ -945,15 +938,6 @@ subroutine dyn_init(cam_runtime_opts, dyn_in, dyn_out)
       call add_default(tottnam(ixcldliq), budget_hfile_num, ' ')
       call add_default(tottnam(ixcldice), budget_hfile_num, ' ')
    end if
-
-  ! constituent indices for waccm-x
-  if ( cam_runtime_opts%waccmx_option() == 'ionosphere' .or. &
-       cam_runtime_opts%waccmx_option() == 'neutral' ) then
-     call const_get_index('atomic_oxygen_mixing_ratio_wrt_total_mass',  ixo)
-     call const_get_index('oxygen_mixing_ratio_wrt_total_mass', ixo2)
-     call const_get_index('atomic_hydrogen_mixing_ratio_wrt_total_mass',  ixh)
-     call const_get_index('hydrogen_mixing_ratio_wrt_total_mass', ixh2)
-  end if
 
    call test_mapping_addfld
 
@@ -2171,7 +2155,7 @@ subroutine check_file_layout(file, elem, dyn_cols, file_desc, dyn_ok)
     if (trim(ini_grid_hdim_name) == 'none') then
       call endrun(sub//': ERROR: no horizontal dimension in initial data file. &
          &Cannot read data from file')
-   end if   
+   end if
 
    ! Check that number of columns in IC file matches grid definition.
 
