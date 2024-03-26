@@ -74,6 +74,10 @@ module element_mod
 
     real(kind=r8), allocatable :: pecnd(:,:,:)                ! pressure perturbation from condensate
 
+    ! reference profiles
+    real (kind=r8), allocatable :: T_ref(:,:,:)               ! reference temperature
+    real (kind=r8), allocatable :: dp_ref(:,:,:)              ! reference pressure level thickness
+
     real(kind=r8) :: ps_met(np,np)     ! surface pressure of prescribed meteorology
     real(kind=r8) :: dpsdt_met(np,np)  ! rate of change of surface pressure of prescribed meteorology
 
@@ -596,6 +600,15 @@ contains
       call check_allocate(iret, subname, 'elem%derived%pecnd(np,np,nlev)', &
                           file=__FILE__, line=__LINE__)
 
+      ! reference profile temperature
+      allocate(elem(i)%derived%T_ref(np,np,nlev), stat=iret)
+      call check_allocate(iret, subname, 'elem%derived%T_ref(np,np,nlev)', &
+                          file=__FILE__, line=__LINE__)
+
+      ! reference profile pressure level thickness
+      allocate(elem(i)%derived%dp_ref(np,np,nlev), stat=iret)
+      call check_allocate(iret, subname, 'elem%derived%dp_ref(np,np,nlev)', &
+                          file=__FILE__, line=__LINE__)
       !----------------------------
 
       !First Coordinate:

@@ -45,7 +45,8 @@ module dynconst
    real(kind_dyn), protected, public :: lapse_rate
    ! R/Cp
    real(kind_dyn), protected, public :: cappa
-
+   ! Sea level pressure from US Standard Atmosphere (Pa)
+   real(kind_dyn), protected, public :: ptsd
 
    !Public routines:
    public :: dynconst_init
@@ -72,6 +73,7 @@ CONTAINS
       use physconst, only: phys_cappa=>cappa
       use physconst, only: phys_rair=>rair
       use physconst, only: phys_rh2o=>rh2o
+      use physconst, only: phys_pstd=>pstd
 
       !Set constants used by the dynamics:
 
@@ -86,6 +88,7 @@ CONTAINS
       tref       = real(phys_tref, kind_dyn)
       lapse_rate = real(phys_lapse_rate, kind_dyn)
       cappa      = real(phys_cappa, kind_dyn)
+      pstd       = real(phys_pstd, kind_dyn)
 
    end subroutine dynconst_init
 

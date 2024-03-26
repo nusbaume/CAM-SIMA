@@ -330,7 +330,7 @@ contains
   ! must call fill_halo_phys before calling this subroutine
   !
   subroutine phys2dyn(hybrid,elem,fld_phys,fld_gll,nets,nete,num_lev,num_flds,fvm,llimiter,istart_vector,halo_filled)
-    use dimensions_mod, only: np, nhc_phys, fv_nphys 
+    use dimensions_mod, only: np, nhc_phys, fv_nphys
     use hybrid_mod, only : hybrid_t
     type (hybrid_t), intent(in)   :: hybrid  ! distributed parallel structure (shared)
     integer       , intent(in)    :: nets,nete,num_flds,num_lev
@@ -512,7 +512,7 @@ contains
     do ie=nets,nete
       tmp = 1.0_r8
       inv_area  = 1.0_r8/dyn2phys(tmp,elem(ie)%metdet(:,:))
-      phis_phys(:,ie) = RESHAPE(fvm(ie)%phis_physgrid,SHAPE(phis_phys(:,ie)))
+      phis_phys(:,ie) = RESHAPE(dyn2phys(elem(ie)%state%phis(:,:),elem(ie)%metdet(:,:),inv_area),SHAPE(phis_phys(:,ie)))
       ps_phys(:,ie) = ptop
       if (nc.ne.fv_nphys) then
         tmp = 1.0_r8
@@ -542,7 +542,7 @@ contains
           ! no mapping needed - just copy fields into physics structure
           !
           dp3d_phys(:,k,ie) = RESHAPE(fvm(ie)%dp_fvm(1:nc,1:nc,k),SHAPE(dp3d_phys(:,k,ie)))
-          ps_phys(:,ie) = ps_phys(:,ie)+RESHAPE(fvm(ie)%dp_fvm(1:nc,1:nc,k),SHAPE(ps_phys(:,ie))) 
+          ps_phys(:,ie) = ps_phys(:,ie)+RESHAPE(fvm(ie)%dp_fvm(1:nc,1:nc,k),SHAPE(ps_phys(:,ie)))
           do m_cnst=1,num_trac
             q_phys(:,k,m_cnst,ie) = RESHAPE(fvm(ie)%c(1:nc,1:nc,k,m_cnst),SHAPE(q_phys(:,k,m_cnst,ie)))
           end do
@@ -575,7 +575,7 @@ contains
     real (kind=r8), intent(in), optional :: q_gll(np,np)
     real (kind=r8)                       :: qdp_phys(nc,nc), min_val, max_val
     integer                              :: i,j
-    
+
     call subcell_integration(qdp_gll(:,:), np, nc, metdet,qdp_phys)
     if (present(inv_dp_darea_phys)) then
       !
@@ -1074,18 +1074,18 @@ contains
           mass_forcing_phys = 0.0_r8
           do h=1,num
             jdx = save_overlap_idx(1,h,jx,jy,ie); jdy = save_overlap_idx(2,h,jx,jy,ie)
-            q_prev = save_q_overlap(h,jx,jy,k,m_cnst,ie)   
+            q_prev = save_q_overlap(h,jx,jy,k,m_cnst,ie)
 #ifndef skip_high_order_fq_map
             save_q_overlap(h,jx,jy,k,m_cnst,ie) = save_q_overlap(h,jx,jy,k,m_cnst,ie)+fq_phys_overlap(h,jx,jy)
             save_q_overlap(h,jx,jy,k,m_cnst,ie) = MIN(save_q_overlap(h,jx,jy,k,m_cnst,ie),phys_cdp_max(jx,jy))
-            save_q_overlap(h,jx,jy,k,m_cnst,ie) = MAX(save_q_overlap(h,jx,jy,k,m_cnst,ie),phys_cdp_min(jx,jy))              
+            save_q_overlap(h,jx,jy,k,m_cnst,ie) = MAX(save_q_overlap(h,jx,jy,k,m_cnst,ie),phys_cdp_min(jx,jy))
             mass_forcing = (save_q_overlap(h,jx,jy,k,m_cnst,ie)-q_prev)*save_air_mass_overlap(h,jx,jy,k,ie)
             mass_forcing_phys = mass_forcing_phys + mass_forcing
             fqdp_fvm(jdx,jdy,m_cnst) = fqdp_fvm(jdx,jdy,m_cnst)+mass_forcing
 #endif
             !
             ! prepare for mass fixing algorithm
-            !       
+            !
             dq_min_overlap(h,jx,jy)   = save_q_overlap(h,jx,jy,k,m_cnst,ie)-phys_cdp_min(jx,jy)
             dq_max_overlap  (h,jx,jy) = save_q_overlap(h,jx,jy,k,m_cnst,ie)-phys_cdp_max(jx,jy)
           end do
@@ -1183,7 +1183,7 @@ contains
     use dp_mapping, only: weights_eul_index_all_fvm2phys
     use dp_mapping, only: weights_lgr_index_all_phys2fvm, weights_eul_index_all_phys2fvm,jall_phys2fvm
     use dp_mapping, only: weights_all_phys2fvm
-    
+
     integer              , intent(in)           :: ie,k
     type(fvm_struct)     , intent(in)           :: fvm
     integer              , intent(in)           :: num_trac, max_overlap
@@ -1216,7 +1216,7 @@ contains
         end if
       end do
     end do
-    
+
     llimiter_q=.false.
     call get_physgrid_recons(fvm,fq_phys,recons_q,num_trac,llimiter_q)
     !
@@ -1236,11 +1236,11 @@ contains
        do m_cnst=1,num_trac
          fq_phys_overlap(idx,jx,jy,m_cnst) = &
               (fvm%dp_fvm(jdx,jdy,k)*SUM(weights_all_phys2fvm_local(h,:)*recons_q(:,jx,jy,m_cnst))+&
-              fq_phys(jx,jy,m_cnst)*dp_tmp)/save_air_mass_overlap(idx,jx,jy,k,ie)         
+              fq_phys(jx,jy,m_cnst)*dp_tmp)/save_air_mass_overlap(idx,jx,jy,k,ie)
        end do
      end do
   end subroutine get_fq_overlap
-  
+
   subroutine get_physgrid_recons(fvm,field_phys,recons_phys,num_trac,llimiter)
     use dimensions_mod, only: fv_nphys,nhr_phys,nhc_phys,ns_phys
     use fvm_reconstruction_mod, only: reconstruction
@@ -1335,13 +1335,13 @@ contains
     num_overlap(:,:) = 0
     q_phys = 0.0_r8
     do h=1,jall_fvm2phys(ie)
-       jx  = weights_lgr_index_all_fvm2phys(h,1,ie); jy  = weights_lgr_index_all_fvm2phys(h,2,ie)       
+       jx  = weights_lgr_index_all_fvm2phys(h,1,ie); jy  = weights_lgr_index_all_fvm2phys(h,2,ie)
        jdx = weights_eul_index_all_fvm2phys(h,1,ie); jdy = weights_eul_index_all_fvm2phys(h,2,ie)
 
        num_overlap(jx,jy) = num_overlap(jx,jy)+1
        idx = num_overlap(jx,jy)
 
-       dp_fvm_tmp = fvm%dp_fvm(jdx,jdy,k)       
+       dp_fvm_tmp = fvm%dp_fvm(jdx,jdy,k)
        dp_tmp = save_air_mass_overlap(idx,jx,jy,k,ie)-dp_fvm_tmp*weights_all_fvm2phys(h,1,ie)
 #ifdef PCoM
        dp_tmp = save_air_mass_overlap(idx,jx,jy,k,ie)
@@ -1364,6 +1364,6 @@ contains
        save_q_phys(:,:,k,m_cnst,ie) = q_phys(:,:,m_cnst)
      end do
    end subroutine get_q_overlap_save
-  
+
 
 end module fvm_mapping
