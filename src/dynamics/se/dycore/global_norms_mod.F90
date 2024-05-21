@@ -603,7 +603,7 @@ contains
     !
     ! Logging text for sponge layer configuration
     !
-    if (hybrid%masterthread .and. nu_set .or. div_set .or. lev_set) then
+    if (hybrid%masterthread .and. (nu_set .or. div_set .or. lev_set)) then
        write(iulog,* )""
        write(iulog,* )"Sponge layer del4 coefficient defaults based on model top location:"
     end if
@@ -636,15 +636,22 @@ contains
     !
     ! Log sponge layer configuration
     !
-    if (hybrid%masterthread.and.nu_set) &
+    if (hybrid%masterthread) then
+       if (nu_set) then
          write(iulog, '(a,e9.2)')   '  sponge_del4_nu_fac     = ',sponge_del4_nu_fac
-    if (hybrid%masterthread.and.div_set) &
-         write(iulog, '(a,e9.2)')   '  sponge_del4_nu_div_fac = ',sponge_del4_nu_div_fac
-    if (hybrid%masterthread.and.lev_set) &
-         write(iulog, '(a,i0)')   '  sponge_del4_lev        = ',sponge_del4_lev
-    write(iulog,* )""
+       end if
 
-    if (hybrid%masterthread) write(iulog,*) ": sponge layer viscosity scaling factor"
+       if (div_set) then
+         write(iulog, '(a,e9.2)')   '  sponge_del4_nu_div_fac = ',sponge_del4_nu_div_fac
+       end if
+
+       if (lev_set) then
+         write(iulog, '(a,i0)')   '  sponge_del4_lev        = ',sponge_del4_lev
+       end if
+
+       write(iulog,* )""
+    end if
+
     nu_max     =  sponge_del4_nu_fac*nu_p
     nu_div_max =  sponge_del4_nu_div_fac*nu_p
     do k=1,nlev
