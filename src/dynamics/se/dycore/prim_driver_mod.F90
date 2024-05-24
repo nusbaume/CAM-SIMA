@@ -1,5 +1,3 @@
-!#define _DBG_ print *,"file: ",__FILE__," line: ",__LINE__," ithr: ",hybrid%ithr
-#define _DBG_
 module prim_driver_mod
   use shr_kind_mod,           only: r8=>shr_kind_r8
   use cam_logfile,            only: iulog
@@ -27,8 +25,8 @@ contains
   subroutine prim_init2(elem, fvm, hybrid, nets, nete, tl, hvcoord)
 
     !CAM-SIMA:
-    use dynconst,              only: gravit, cappa, cpair, tref, lapse_rate, get_dp_ref
-    use dynconst,              only: pstd
+    use dynconst,               only: gravit, cappa, cpair, tref, lapse_rate, pstd
+    use dyn_thermo,             only: get_dp_ref
 
     !SE dycore:
     use dimensions_mod,         only: irecons_tracer, fvm_supercycling
@@ -149,8 +147,8 @@ contains
      ! pre-compute pressure-level thickness reference profile
      !
      do ie=nets,nete
-       call get_dp_ref(hvcoord%hyai, hvcoord%hybi, hvcoord%ps0,1,np,1,np,1,nlev,&
-            elem(ie)%state%phis(:,:),elem(ie)%derived%dp_ref(:,:,:),ps_ref(:,:,ie))
+       call get_dp_ref(hvcoord%hyai, hvcoord%hybi, hvcoord%ps0, elem(ie)%state%phis(:,:), &
+                       elem(ie)%derived%dp_ref(:,:,:), ps_ref(:,:,ie))
      end do
      !
      ! pre-compute reference temperature profile (Simmons and Jiabin, 1991, QJRMS, Section 2a

@@ -948,7 +948,7 @@ contains
     !
     ! map tracers
     ! map velocity components
-    ! map temperature (either by mapping thermal energy or virtual temperature over log(p)
+    ! map temperature (either by mapping enthalpy or virtual temperature over log(p)
     ! (controlled by vert_remap_uvTq_alg > -20 or <= -20)
     !
     use hybvcoord_mod         , only: hvcoord_t
@@ -1081,7 +1081,7 @@ contains
         !
         call remap1(internal_energy_star,np,1,1,1,dp_star_moist,dp_moist,ptop,1,.false.,kord_uvT)
         call get_virtual_temp(elem(ie)%state%qdp(:,:,:,1:qsize,np1_qdp), &
-             ttmp(:,:,:,1),dp_dry=dp_dry,                                                       &
+             ttmp(:,:,:,1), dp_dry=dp_dry,                               &
              active_species_idx_dycore=thermodynamic_active_species_idx_dycore)
         !
         ! convert new Tv to T

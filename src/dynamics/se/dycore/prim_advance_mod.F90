@@ -774,10 +774,11 @@ contains
         !
         ! compute molecular diffusion and thermal conductivity coefficients at mid-levels
         !
-        call get_molecular_diff_coef(1,np,1,np,ksponge_end,nlev,&
-             elem(ie)%state%T(:,:,:,nt),0,km_sponge_factor(1:ksponge_end),kmvis(:,:,:,ie),kmcnd(:,:,:,ie),qsize,&
-             elem(ie)%state%Qdp(:,:,:,1:qsize,qn0),fact=1.0_r8/elem(ie)%state%dp3d(:,:,1:ksponge_end,nt),&
-             active_species_idx_dycore=thermodynamic_active_species_idx_dycore)
+        call get_molecular_diff_coef(elem(ie)%state%T(:,:,:,nt), .false., &
+                                     km_sponge_factor(1:ksponge_end), kmvis(:,:,:,ie), &
+                                     kmcnd(:,:,:,ie), elem(ie)%state%Qdp(:,:,:,1:qsize,qn0), &
+                                     fact=1.0_r8/elem(ie)%state%dp3d(:,:,1:ksponge_end,nt), &
+                                     active_species_idx_dycore=thermodynamic_active_species_idx_dycore)
       end do
       !
       ! diagnostics
@@ -1530,7 +1531,7 @@ contains
     type (element_t) , intent(in) :: elem(:)
     type(fvm_struct) , intent(in) :: fvm(:)
     integer          , intent(in) :: tl, tl_qdp,nets,nete
-    character*(*)    , intent(in) :: outfld_name_suffix ! suffix for "outfld" names
+    character(len=*) , intent(in) :: outfld_name_suffix ! suffix for "outfld" names
 
     !---------------------------Local storage-------------------------------
 
@@ -1592,8 +1593,9 @@ contains
       do ie=nets,nete
         se    = 0.0_r8
         ke    = 0.0_r8
-        call get_dp(elem(ie)%state%Qdp(:,:,:,1:qsize,tl_qdp),MASS_MIXING_RATIO,thermodynamic_active_species_idx_dycore,&
-             elem(ie)%state%dp3d(:,:,:,tl),pdel,ps=ps,ptop=hyai(1)*ps0)
+        call get_dp(elem(ie)%state%Qdp(:,:,:,1:qsize,tl_qdp),MASS_MIXING_RATIO, &
+                    thermodynamic_active_species_idx_dycore, &
+                    elem(ie)%state%dp3d(:,:,:,tl),pdel,ps=ps,ptop=hyai(1)*ps0)
         call get_cp(elem(ie)%state%Qdp(:,:,:,1:qsize,tl_qdp),&
              .false.,cp,dp_dry=elem(ie)%state%dp3d(:,:,:,tl),&
              active_species_idx_dycore=thermodynamic_active_species_idx_dycore)
@@ -1680,8 +1682,9 @@ contains
       do ie=nets,nete
         mr    = 0.0_r8
         mo    = 0.0_r8
-        call get_dp(elem(ie)%state%Qdp(:,:,:,1:qsize,tl_qdp),MASS_MIXING_RATIO,thermodynamic_active_species_idx_dycore,&
-             elem(ie)%state%dp3d(:,:,:,tl),pdel,ps=ps,ptop=hyai(1)*ps0)
+        call get_dp(elem(ie)%state%Qdp(:,:,:,1:qsize,tl_qdp), MASS_MIXING_RATIO, &
+                    thermodynamic_active_species_idx_dycore, &
+                    elem(ie)%state%dp3d(:,:,:,tl), pdel, ps=ps, ptop=hyai(1)*ps0)
         do k = 1, nlev
           do j=1,np
             do i = 1, np
@@ -1809,8 +1812,9 @@ contains
      logical, parameter  :: del4omega = .true.
 
      do ie=nets,nete
-        call get_dp(elem(ie)%state%Qdp(:,:,:,1:qsize,qn0),MASS_MIXING_RATIO,&
-           thermodynamic_active_species_idx_dycore,elem(ie)%state%dp3d(:,:,:,n0),dp_full)
+        call get_dp(elem(ie)%state%Qdp(:,:,:,1:qsize,qn0), MASS_MIXING_RATIO,               &
+                    thermodynamic_active_species_idx_dycore, elem(ie)%state%dp3d(:,:,:,n0), &
+                    dp_full)
         do k=1,nlev
            if (k==1) then
               p_full(:,:,k) = hvcoord%hyai(k)*hvcoord%ps0 + dp_full(:,:,k)/2

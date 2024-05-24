@@ -126,7 +126,7 @@ CONTAINS
   !  to prevent repeated allocation/initialization
   !
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    use physconst,       only: cappa
+    use dynconst,        only: cappa
     use air_composition, only: dry_air_species_num,thermodynamic_active_species_num
     use air_composition, only: thermodynamic_active_species_idx_dycore
     use dyn_grid,        only: hvcoord

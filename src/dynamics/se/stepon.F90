@@ -324,8 +324,10 @@ subroutine diag_dynvar_ic(elem, fvm)
                        file=__FILE__, line=__LINE__)
 
      do ie = 1, nelemd
-       call get_ps(elem(ie)%state%Qdp(:,:,:,:,tl_Qdp),&
-            thermodynamic_active_species_idx_dycore,elem(ie)%state%dp3d(:,:,:,tl_f),fld_2d,hyai(1)*ps0)
+       call get_ps(elem(ie)%state%Qdp(:,:,:,:,tl_Qdp),      &
+                   thermodynamic_active_species_idx_dycore, &
+                   elem(ie)%state%dp3d(:,:,:,tl_f),fld_2d,  &
+                   hyai(1)*ps0)
          do j = 1, np
             do i = 1, np
               ftmp(i+(j-1)*np,1,1) = fld_2d(i,j)
@@ -352,8 +354,10 @@ subroutine diag_dynvar_ic(elem, fvm)
                        file=__FILE__, line=__LINE__)
 
      do ie = 1, nelemd
-       call get_ps(elem(ie)%state%Qdp(:,:,:,:,tl_Qdp),&
-            thermodynamic_active_species_idx_dycore,elem(ie)%state%dp3d(:,:,:,tl_f),fld_2d,hyai(1)*ps0)
+       call get_ps(elem(ie)%state%Qdp(:,:,:,:,tl_Qdp),      &
+                   thermodynamic_active_species_idx_dycore, &
+                   elem(ie)%state%dp3d(:,:,:,tl_f),fld_2d,  &
+                   hyai(1)*ps0)
        do j = 1, np
          do i = 1, np
            ftmp(i+(j-1)*np,1,1) = fld_2d(i,j)
@@ -375,11 +379,13 @@ subroutine diag_dynvar_ic(elem, fvm)
          !call outfld('U&IC', RESHAPE(elem(ie)%state%v(:,:,1,:,tl_f), (/npsq,nlev/)), npsq, ie)
          !call outfld('V&IC', RESHAPE(elem(ie)%state%v(:,:,2,:,tl_f), (/npsq,nlev/)), npsq, ie)
 
-!REMOVE ONCE TRACERS/CHEMISTRY IS ENABLED -JN:
+!REMOVE ONCE TRACERS/CHEMISTRY AND HISTORY IS ENABLED -JN:
 #if 0
          if (fv_nphys < 1) then
-            call get_sum_species(elem(ie)%state%Qdp(:,:,:,:,tl_qdp), &
-               thermodynamic_active_species_idx_dycore, factor_array,dp_dry=elem(ie)%state%dp3d(:,:,:,tl_f))
+            call get_sum_species(elem(ie)%state%Qdp(:,:,:,:,tl_qdp),      &
+                                 thermodynamic_active_species_idx_dycore, &
+                                 factor_array,                            &
+                                 dp_dry=elem(ie)%state%dp3d(:,:,:,tl_f))
             factor_array(:,:,:) = 1.0_r8/factor_array(:,:,:)
             do m_cnst = 1, qsize
                if (cnst_type(m_cnst) == 'wet') then
