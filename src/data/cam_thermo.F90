@@ -606,7 +606,7 @@ CONTAINS
      integer,         intent(in)  :: active_species_idx(:)              ! index for thermodynamic species in tracer array
      real(kind_phys), intent(in)  :: dp_dry(:, :)                       ! dry pressure level thickness
      real(kind_phys), intent(out) :: dp(:, :)                           ! pressure level thickness
-     real(kind_phys), optional,intent(out) :: ps(:, :)                  ! surface pressure (if ps present then ptop
+     real(kind_phys), optional,intent(out) :: ps(:,:)                   ! surface pressure (if ps present then ptop
                                                                         !                   must be present)
      real(kind_phys), optional,intent(in)  :: ptop                      ! pressure at model top
 
@@ -641,7 +641,7 @@ CONTAINS
          ps = ptop
          do kdx = 1, SIZE(tracer, 2)
            do idx = 1, SIZE(tracer, 1)
-             ps(idx, kdx) = ps(idx, kdx) + dp(idx, kdx)
+             ps(idx) = ps(idx) + dp(idx, kdx)
            end do
          end do
        else
@@ -664,8 +664,13 @@ CONTAINS
      integer :: jdx
 
      do jdx = 1, SIZE(tracer, 2)
-       call get_dp(tracer(:, jdx, :, :), mixing_ratio, active_species_idx,  &
-               dp_dry(:, jdx, :), dp(:, jdx, :), ps=ps, ptop=ptop)
+       if (present(ps)) then
+         call get_dp(tracer(:, jdx, :, :), mixing_ratio, active_species_idx,  &
+                     dp_dry(:, jdx, :), dp(:, jdx, :), ps=ps, ptop=ptop)
+       else
+         call get_dp(tracer(:, jdx, :, :), mixing_ratio, active_species_idx,  &
+                     dp_dry(:, jdx, :), dp(:, jdx, :), ptop=ptop)
+       end if
      end do
 
    end subroutine get_dp_2hd
