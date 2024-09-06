@@ -7,7 +7,7 @@
 [submodule "history"]
 	path = src/history/buffers
 	url = https://github.com/peverwhee/history_output
-	fxtag         = sima-history
+	fxtag         = 7cd5a736016be3a970601e65c9d9dbefa31ff9e9
 	fxrequired    = AlwaysRequired
 	fxDONOTUSEurl = https://github.com/peverwhee/history_output
 [submodule "mpas"]
