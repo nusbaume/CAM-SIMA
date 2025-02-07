@@ -498,14 +498,14 @@ class ConfigCAM:
         self.create_config("ocn", ocn_desc, comp_ocn,
                            ocn_valid_vals, is_nml_attr=True)
 
+        #--------------------------
+        # Set physics_suites string
+        #--------------------------
+
         phys_desc = ["A semicolon-separated list of physics suite definition "
                      "file (SDF) names.",
                      "To specify the Kessler and Held-Suarez suites as ",
                      "run time options, use '--physics-suites kessler;held_suarez_1994'."]
-
-        #--------------------------
-        # Set physics_suites string
-        #--------------------------
 
         self.create_config("physics_suites", phys_desc,
                            user_config_opts.physics_suites)
