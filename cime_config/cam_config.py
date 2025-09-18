@@ -861,7 +861,7 @@ class ConfigCAM:
         self.create_config("reg_dir", reg_dir_desc, reg_dir)
 
         #---------------------------------------------------------
-        # Call SPIN (CCPP Framework) to generate glue code
+        # Call CCPP Framework to generate glue code
         #---------------------------------------------------------
         retvals = generate_physics_suites(build_cache, self.__cppdefs,
                                           self.__atm_name, phys_suites,

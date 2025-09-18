@@ -503,6 +503,15 @@ def generate_physics_suites(build_cache, preproc_defs, host_name,
     # Add in files generated from the registry:
     host_files.extend(reg_files)
 
+    # Add special "spmd_utils" metadata file. This file
+    # provides to the physics the MPI communicator as
+    # used by CAM-SIMA, which is a DDT that is defined
+    # internally in the CCPP-framework, and the Fortran
+    # MPI library, which in-turn means that it cannot be
+    # included in the registry.
+    spmd_utils_meta_file = os.path.join(atm_root, "src", "utils", "spmd_utils.meta")
+    host_files.append(spmd_utils_meta_file)
+
     # Convert preproc defs to string:
     if preproc_defs:
         preproc_cache_str = ', '.join(preproc_defs)
@@ -579,6 +588,11 @@ def generate_physics_suites(build_cache, preproc_defs, host_name,
             name, ktype = [x.strip() for x in kind_type.split('=')]
             _LOGGER.debug("   %s: '%s'", name, ktype)
         # end for
+
+        #DEBUG -JN:
+        print("DEBUGGING HERE -JN")
+        for host_file in host_files:
+            print(host_file)
 
         # generate CCPP caps
         run_env = CCPPFrameworkEnv(_LOGGER, host_files=host_files,

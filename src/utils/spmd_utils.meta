@@ -7,8 +7,8 @@
   type  = module
 [ mpicom ]
   standard_name = mpi_communicator
-  units = index
-  type = integer
+  units = none
+  type = MPI_Comm
   dimensions = ()
   protected = True
 [ masterprocid ]

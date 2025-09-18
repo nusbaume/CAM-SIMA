@@ -71,7 +71,7 @@ CONTAINS
    end subroutine cam_set_log_unit
 
    subroutine cam_logfile_readnl(nlfile)
-      use mpi,        only: mpi_integer
+      use mpi_f08,    only: mpi_bcast, MPI_INTEGER
       use shr_nl_mod, only: find_group_name => shr_nl_find_group_name
       use spmd_utils, only: mpicom, masterprocid, masterproc
 
@@ -81,6 +81,7 @@ CONTAINS
       ! Local variables
       integer                      :: unitn
       integer                      :: ierr
+      character(len=512)           :: errmsg
 
       character(len=*), parameter  :: subname = 'cam_logfile_readnl'
 
@@ -95,10 +96,10 @@ CONTAINS
          open(newunit=unitn, file=trim(nlfile), status='old')
          call find_group_name(unitn, 'cam_logfile_nl', status=ierr)
          if (ierr == 0) then
-            read(unitn, cam_logfile_nl, iostat=ierr)
+            read(unitn, cam_logfile_nl, iostat=ierr, iomsg=errmsg)
             if (ierr /= 0) then
                ! Can't call endrun because of dependency loop
-               write(iulog, *) subname, ': ERROR: reading namelist'
+               write(iulog, *) subname, ': ERROR: reading namelist: ', trim(errmsg)
             end if
          end if
          close(unitn)
@@ -119,7 +120,7 @@ CONTAINS
          end select
       end if
 
-      call mpi_bcast(debug_output, 1, mpi_integer, masterprocid, mpicom, ierr)
+      call mpi_bcast(debug_output, 1, MPI_INTEGER, masterprocid, mpicom, ierr)
       if (ierr /= 0) then
          ! Can't call endrun because of dependency loop
          ! But MPI usually crashes in Fortran
@@ -132,7 +133,7 @@ CONTAINS
       ! Print out values from every task
       use shr_sys_mod,  only: shr_sys_flush
       use spmd_utils,   only: mpicom, masterprocid, masterproc, npes
-      use mpi,          only: mpi_integer
+      use mpi_f08,      only: mpi_gather, MPI_INTEGER
 
       ! Dummy arguments
       character(len=*), intent(in) :: subname
@@ -149,7 +150,7 @@ CONTAINS
 
       allocate(global_info(npes, num_fields))
       do index = 1, num_fields
-         call MPI_Gather(values(index), 1, MPI_INTEGER, global_info(:,index), &
+         call mpi_gather(values(index), 1, MPI_INTEGER, global_info(:,index), &
               1, MPI_INTEGER, masterprocid, mpicom, iret)
       end do
       if (masterproc) then
@@ -168,7 +169,7 @@ CONTAINS
       use iso_fortran_env, only: r8 => REAL64
       use shr_sys_mod,     only: shr_sys_flush
       use spmd_utils,      only: mpicom, masterprocid, masterproc, npes
-      use mpi,             only: mpi_real8
+      use mpi_f08,         only: mpi_gather, MPI_REAL8
 
       ! Dummy arguments
       character(len=*), intent(in) :: subname
@@ -185,7 +186,7 @@ CONTAINS
 
       allocate(global_info(npes, num_fields))
       do index = 1, num_fields
-         call MPI_Gather(values(index), 1, MPI_REAL8, global_info(:,index), &
+         call mpi_gather(values(index), 1, MPI_REAL8, global_info(:,index), &
               1, MPI_REAL8, masterprocid, mpicom, iret)
       end do
       if (masterproc) then

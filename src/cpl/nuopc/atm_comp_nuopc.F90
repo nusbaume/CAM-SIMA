@@ -330,7 +330,8 @@ contains
   !===============================================================================
   subroutine InitializeRealize(gcomp, importState, exportState, clock, rc)
 
-    use ESMF, only : ESMF_VMGet
+    use ESMF,    only : ESMF_VMGet
+    use mpi_f08, only : MPI_Comm
 
     ! input/output variables
     type(ESMF_GridComp)  :: gcomp
@@ -395,7 +396,8 @@ contains
     character(CS)           :: inst_name
     integer                 :: inst_index
     character(CS)           :: inst_suffix
-    integer                 :: lmpicom
+    integer                 :: vm_mpicom_int
+    type(MPI_Comm)          :: lmpicom
     logical                 :: isPresent, isSet
     character(len=512)      :: diro
     character(len=512)      :: logfile
@@ -426,7 +428,11 @@ contains
     call ESMF_GridCompGet(gcomp, vm=vm, localpet=localPet, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    call ESMF_VMGet(vm, mpiCommunicator=lmpicom, rc=rc)
+    call ESMF_VMGet(vm, mpiCommunicator=vm_mpicom_int, rc=rc)
+
+    !Set Fortran 2008 MPI_Comm type:
+    lmpicom%mpi_val = vm_mpicom_int
+
     if (chkerr(rc,__LINE__,u_FILE_u)) return
 
     call ESMF_VMGet(vm, pet=localPet, peCount=localPeCount, rc=rc)

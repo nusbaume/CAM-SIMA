@@ -13,7 +13,7 @@ module spmd_utils
 !- use statements ------------------------------------------------------
 !-----------------------------------------------------------------------
 
-   use mpi, only: MPI_COMM_NULL
+   use mpi_f08, only: MPI_Comm, MPI_COMM_NULL
 
    implicit none
    private                   ! Make the default access private
@@ -29,20 +29,25 @@ module spmd_utils
    ! the value of iam which is assigned the masterproc duties
    integer,   parameter           :: DEFAULT_MASTERPROC = 0
 
+   !type(MPI_Comm), public, protected :: mpicom = MPI_COMM_NULL
+
    !> \section arg_table_spmd_utils  Argument Table
    !! \htmlinclude spmd_utils.html
-   integer, public, protected     :: mpicom = MPI_COMM_NULL
-   logical, public, protected     :: masterproc = .false.
-   integer, public, protected     :: masterprocid = -1
-   integer, public, protected     :: iam = -1
-   integer, public, protected     :: npes = -1
+   type(MPI_Comm), public, protected :: mpicom = MPI_COMM_NULL
+   logical, public, protected        :: masterproc = .false.
+   integer, public, protected        :: masterprocid = -1
+   integer, public, protected        :: iam = -1
+   integer, public, protected        :: npes = -1
 
 !========================================================================
 CONTAINS
 !========================================================================
 
    subroutine spmd_init(mpicom_atm)
-      use mpi, only: MPI_MAX_PROCESSOR_NAME
+      use mpi_f08, only: MPI_MAX_PROCESSOR_NAME
+      use mpi_f08, only: DEFAULT_MASTERPROC
+      use mpi_f08, only: mpi_comm_rank, mpi_comm_size
+      use mpi_f08, only: mpi_get_processor_name
       !-----------------------------------------------------------------------
       !
       ! Purpose: MPI initialization routine:
@@ -53,7 +58,8 @@ CONTAINS
       !-----------------------------------------------------------------------
 
       ! Dummy argument
-      integer, intent(in) :: mpicom_atm
+      !integer, intent(in) :: mpicom_atm
+      type(MPI_Comm), intent(in) :: mpicom_atm
 
       !
       ! Local variables
@@ -84,7 +90,7 @@ CONTAINS
       ! Attempt to allocate proc_name padded to 8 bytes
       ierr = MOD(length, 8)
       if ( (ierr > 0) .and.                                                   &
-           ((length + (8 - ierr)) <= mpi_max_processor_name)) then
+           ((length + (8 - ierr)) <= MPI_MAX_PROCESSOR_NAME)) then
          allocate(proc_name(length + (8 - ierr)))
       else
          allocate(proc_name(length))
