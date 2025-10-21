@@ -34,6 +34,15 @@
     <use module="physconst" reference="rair"/>
     <use module="physconst" reference="mwdry"/>
     <use module="physconst" reference="zvir"/>
+
+    <!-- Dimensions -->
+    <variable local_name="micro_dust_nbins"
+              standard_name="dust_size_bins_dimension"
+              units="count" type="integer"
+              allocatable="parameter">
+      <initial_value>4</initial_value>
+    </variable>
+
     <!-- State variables -->
     <variable local_name="ps" standard_name="surface_air_pressure"
               units="Pa" type="real" kind="kind_phys"
@@ -1537,5 +1546,92 @@
       <initial_value>.true.</initial_value>
       <initial_value dyn="SE,MPAS"> .false. </initial_value>
     </variable>
+
+    <!-- PUMAS Variables -->
+    <variable local_name="relvar_in"
+              standard_name="relative_variance_of_subgrid_cloud_condensate_distribution"
+              units="1" type="real" kind="kind_phys"
+              allocatable="allocatable">
+      <dimensions>horizontal_dimension vertical_layer_dimension</dimensions>
+      <ic_file_input_names>RELVAR pbuf_RELVAR</ic_file_input_names>
+    </variable>
+    <variable local_name="strat_liq_cldfrc_in"
+              standard_name="stratiform_cloud_liquid_area_fraction"
+              units="fraction" type="real" kind="kind_phys"
+              allocatable="allocatable">
+      <dimensions>horizontal_dimension vertical_layer_dimension</dimensions>
+      <ic_file_input_names>ALST pbuf_ALST</ic_file_input_names>
+    </variable>
+    <variable local_name="strat_ice_cldfrc_in"
+              standard_name="stratiform_cloud_ice_area_fraction"
+              units="fraction" type="real" kind="kind_phys"
+              allocatable="allocatable">
+      <dimensions>horizontal_dimension vertical_layer_dimension</dimensions>
+      <ic_file_input_names>AIST pbuf_AIST</ic_file_input_names>
+    </variable>
+    <variable local_name="qsatfac_in"
+              standard_name="subgrid_cloud_water_saturation_scaling_factor_for_microphysics"
+              units="1" type="real" kind="kind_phys"
+              allocatable="allocatable">
+      <dimensions>horizontal_dimension vertical_layer_dimension</dimensions>
+      <ic_file_input_names>QSATFAC pbuf_QSATFAC</ic_file_input_names>
+    </variable>
+    <variable local_name="naai_in"
+              standard_name="tendency_of_activated_ice_nuclei_mass_number_concentration"
+              units="kg-1 s-1" type="real" kind="kind_phys"
+              allocatable="allocatable">
+      <dimensions>horizontal_dimension vertical_layer_dimension</dimensions>
+      <ic_file_input_names>NAAI pbuf_NAAI</ic_file_input_names>
+    </variable>
+    <variable local_name="npccn_in"
+              standard_name="tendency_of_activated_cloud_condensation_nuclei_mass_number_concentration"
+              units="kg-1 s-1" type="real" kind="kind_phys"
+              allocatable="allocatable">
+      <dimensions>horizontal_dimension vertical_layer_dimension</dimensions>
+      <ic_file_input_names>NPCCN pbuf_NPCCN</ic_file_input_names>
+    </variable>
+    <variable local_name="rndst_in"
+              standard_name="dust_radii_by_size_bin"
+              units="m" type="real" kind="kind_phys"
+              allocatable="allocatable">
+      <dimensions>horizontal_dimension vertical_layer_dimension dust_size_bins_dimension</dimensions>
+      <ic_file_input_names>RNDST pbuf_RNDST</ic_file_input_names>
+    </variable>
+    <variable local_name="nacon_in"
+              standard_name="dust_number_concentration_by_size_bin_for_contact_freezing"
+              units="m-3" type="real" kind="kind_phys"
+              allocatable="allocatable">
+      <dimensions>horizontal_dimension vertical_layer_dimension dust_size_bins_dimension</dimensions>
+      <ic_file_input_names>NACON pbuf_NACON</ic_file_input_names>
+    </variable>
+    <variable local_name="effi_external_in"
+              standard_name="effective_radius_of_stratiform_cloud_ice_particle_from_external_microphysics"
+              units="micron" type="real" kind="kind_phys"
+              allocatable="allocatable">
+      <dimensions>horizontal_dimension vertical_layer_dimension</dimensions>
+      <ic_file_input_names>REI pbuf_REI</ic_file_input_names>
+    </variable>
+    <variable local_name="frzimm_in"
+              standard_name="tendency_of_cloud_liquid_droplet_number_concentration_due_to_immersion_freezing"
+              units="cm-3" type="real" kind="kind_phys"
+              allocatable="allocatable">
+      <dimensions>horizontal_dimension vertical_layer_dimension</dimensions>
+      <ic_file_input_names>FRZIMM pbuf_FRZIMM</ic_file_input_names>
+    </variable>
+    <variable local_name="frzcnt_in"
+              standard_name="tendency_of_cloud_liquid_droplet_number_concentration_due_to_contact_freezing"
+              units="cm-3" type="real" kind="kind_phys"
+              allocatable="allocatable">
+      <dimensions>horizontal_dimension vertical_layer_dimension</dimensions>
+      <ic_file_input_names>FRZCNT pbuf_FRZCNT</ic_file_input_names>
+    </variable>
+    <variable local_name="frzdep_in"
+              standard_name="tendency_of_cloud_ice_number_concentration_due_to_deposition_nucleation"
+              units="cm-3" type="real" kind="kind_phys"
+              allocatable="allocatable">
+      <dimensions>horizontal_dimension vertical_layer_dimension</dimensions>
+      <ic_file_input_names>FRZDEP pbuf_FRZDEP</ic_file_input_names>
+    </variable>
+
   </file>
 </registry>
