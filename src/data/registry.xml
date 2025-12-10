@@ -1633,7 +1633,7 @@
       <ic_file_input_names>FRZDEP pbuf_FRZDEP</ic_file_input_names>
     </variable>
     <variable local_name="micro_accre_enhan_in"
-              standard_name="spatially_variable_microphysics_accretion_enhancement_factor"
+              standard_name="accretion_enhancement_factor"
               units="1" type="real" kind="kind_phys"
               allocatable="allocatable">
       <dimensions>horizontal_dimension vertical_layer_dimension</dimensions>
