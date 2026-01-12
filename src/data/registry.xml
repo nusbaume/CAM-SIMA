@@ -37,7 +37,7 @@
     <use module="physconst" reference="zvir"/>
 
     <!-- Dimensions -->
-    <variable local_name="micro_dust_nbins"
+    <variable local_name="dust_size_bins_dimension"
               standard_name="dust_size_bins_dimension"
               units="count" type="integer"
               allocatable="parameter">
