@@ -390,8 +390,7 @@ def generate_registry(data_search, build_cache, atm_root, bldroot,
         for reg_file in registry_files:
             retvals = gen_registry(reg_file, dycore, genreg_dir,
                                    gen_fort_indent, source_mods_dir, atm_root,
-                                   logger=_LOGGER, schema_paths=data_search,
-                                   error_on_no_validate=True)
+                                   logger=_LOGGER, schema_paths=data_search)
             retcode, reg_file_list, ic_names, registry_constituents, vars_init_value = retvals
             # Raise error if gen_registry failed:
             if retcode != 0:
@@ -491,8 +490,18 @@ def generate_physics_suites(build_cache, preproc_defs, host_name,
     # End for
     # Figure out if we need to generate new physics code
     genccpp_dir = os.path.join(bldroot, "ccpp")
-    kind_phys = ['kind_phys = REAL64']
-    kind_types = kind_phys
+
+    # Kind definition(s) dictionary:
+    kind_types = {}
+
+    # Use ISO-Fortran double-precision real
+    # definition for default physics kind:
+    kind_types['kind_phys'] = ['ISO_FORTRAN_ENV', 'REAL64']
+
+    # If PUMAS is listed as a physics scheme, then add
+    # its kind definition to the dictionary as well:
+    if 'micro_pumas_ccpp' in scheme_names:
+        kind_types['pumas_r8'] = ['pumas_kinds', 'kind_r8']
 
     # Set location of CCPP "capfiles.txt" file:
     cap_output_file = os.path.join(genccpp_dir, "ccpp_datatable.xml")
@@ -517,7 +526,7 @@ def generate_physics_suites(build_cache, preproc_defs, host_name,
         do_gen_ccpp = force or build_cache.ccpp_mismatch(sdfs, scheme_files,
                                                          host_files,
                                                          preproc_cache_str,
-                                                         kind_phys)
+                                                         kind_types)
     else:
         os.makedirs(genccpp_dir)
         do_gen_ccpp = True
@@ -575,9 +584,9 @@ def generate_physics_suites(build_cache, preproc_defs, host_name,
         _LOGGER.debug("   preproc defs: %s", preproc_cache_str)
         _LOGGER.debug("   output directory: '%s'", genccpp_dir)
         _LOGGER.debug("   kind definitions:")
-        for kind_type in kind_types:
-            name, ktype = [x.strip() for x in kind_type.split('=')]
-            _LOGGER.debug("   %s: '%s'", name, ktype)
+        for kind_name, kind_info in kind_types.items():
+            kind_type = kind_info[1] # Second element is the kind parameter name
+            _LOGGER.debug("   %s: '%s'", kind_name, kind_type)
         # end for
 
         # generate CCPP caps
