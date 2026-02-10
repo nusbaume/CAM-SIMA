@@ -1820,7 +1820,7 @@ def _create_variables_with_initial_value_list(registry):
 ###############################################################################
 def gen_registry(registry_file, dycore, outdir, indent,
                  src_mod, src_root, loglevel=None, logger=None,
-                 schema_paths=None):
+                 schema_paths=None, error_on_no_validate=False):
 ###############################################################################
     """Parse a registry XML file and generate source code and metadata.
     <dycore> is the name of the dycore for DP coupling specialization.
@@ -1863,27 +1863,35 @@ def gen_registry(registry_file, dycore, outdir, indent,
     try:
         emsg = f"Invalid registry file, {registry_file}"
         file_ok = validate_xml_file(registry_file, 'registry', version,
-                                    logger, schema_path=schema_dir)
+                                    logger, schema_path=schema_dir,
+                                    error_on_noxmllint=error_on_no_validate)
     except CCPPError as ccpperr:
-        # Cleanup error message and print
-        # to log before raising the exception
         emsg += f"\n{ccpperr}"
-        logger.error(emsg)
-        raise CCPPError(emsg)
+        file_ok = False
     # end try
-
-    library_name = registry.get('name')
-    emsg = f"Parsing registry, {library_name}"
-    logger.debug(emsg)
-    reg_dir = os.path.dirname(registry_file)
-    files = write_registry_files(registry, dycore, outdir, src_mod,
-                                 src_root, reg_dir, indent, logger)
-    # See comment in _create_ic_name_dict
-    ic_names = _create_ic_name_dict(registry)
-    registry_constituents = _create_constituent_list(registry)
-    vars_init_value = _create_variables_with_initial_value_list(registry)
-    retcode = 0 # Throw exception on error
-
+    if not file_ok:
+        if error_on_no_validate:
+            raise CCPPError(emsg)
+        # end if
+        logger.error(emsg)
+        retcode = 1
+        files = None
+        ic_names = None
+        registry_constituents = None
+        vars_init_value = None
+    else:
+        library_name = registry.get('name')
+        emsg = f"Parsing registry, {library_name}"
+        logger.debug(emsg)
+        reg_dir = os.path.dirname(registry_file)
+        files = write_registry_files(registry, dycore, outdir, src_mod,
+                                     src_root, reg_dir, indent, logger)
+        # See comment in _create_ic_name_dict
+        ic_names = _create_ic_name_dict(registry)
+        registry_constituents = _create_constituent_list(registry)
+        vars_init_value = _create_variables_with_initial_value_list(registry)
+        retcode = 0 # Throw exception on error
+    # end if
     return retcode, files, ic_names, registry_constituents, vars_init_value
 
 def main():

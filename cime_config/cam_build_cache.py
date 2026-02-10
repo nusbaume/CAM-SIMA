@@ -302,11 +302,8 @@ class BuildCacheCAM:
                         elif item.tag == 'kind_type':
                             if isinstance(item.text, str):
                                 if item.text:
-                                    kinfo = item.text.strip().split()
-                                    kname = kinfo[0]
-                                    kmod  = kinfo[1]
-                                    ktype = kinfo[2]
-                                    self.__kind_types[kname.strip()] = [kmod.strip(), ktype.strip()]
+                                    kname, ktype = item.text.strip().split('=')
+                                    self.__kind_types[kname.strip()] = ktype.strip()
                                 # end if
                             # end if
                         else:
@@ -321,8 +318,7 @@ class BuildCacheCAM:
         # end if (no else, we just have an almost empty object)
         # We always need a default definition for kind_phys
         if 'kind_phys' not in self.__kind_types:
-            #Assume ISO-Fortran double-precision real:
-            self.__kind_types['kind_phys'] = ['ISO_FORTRAN_ENV', 'REAL64']
+            self.__kind_types['kind_phys'] = 'REAL64'
         # end if
 
     def update_registry(self, gen_reg_file, registry_source_files,
@@ -350,7 +346,11 @@ class BuildCacheCAM:
         """Replace the ccpp cache data with input data
         """
         self.__preproc_defs = preproc_defs
-        self.__kind_types = kind_types
+        self.__kind_types = {}
+        for kind_def in kind_types:
+            name, ktype = [x.strip() for x in kind_def.split('=')]
+            self.__kind_types[name] = ktype
+        # end for
         self.__sdfs = {}
         for sfile in suite_definition_files:
             new_entry = FileStatus(sfile, 'SDF')
@@ -445,9 +445,9 @@ class BuildCacheCAM:
                       self.__create_nl_file.file_hash)
         preproc = ET.SubElement(ccpp, 'preproc_defs')
         preproc.text = self.__preproc_defs
-        for kind_def, kind_info in self.__kind_types.items():
+        for kind_def, kind_type in self.__kind_types.items():
             kind_elem = ET.SubElement(ccpp, 'kind_type')
-            kind_elem.text = f"{kind_def} {kind_info[0]} {kind_info[1]}"
+            kind_elem.text = f"{kind_def}={kind_type}"
         # end for
 
         #Combine elments into an Element Tree object:
@@ -500,19 +500,18 @@ class BuildCacheCAM:
                     (self.__preproc_defs != preproc_defs))
         if not mismatch:
             my_kind_defs = set(self.__kind_types.keys())
-            my_kind_defs = set()
-
-            # Convert kind_types dict to set of strings for comparison
-            for kind_name, kind_info in self.__kind_types.items():
-                my_kind_defs.add(f"{kind_name} {' '.join(kind_info)}")
-
-            # Convert input kind_types dict to set of strings for comparison
-            test_kind_defs = set()
-            for kind_name, kind_info in kind_types.items():
-                test_kind_defs.add(f"{kind_name} {' '.join(kind_info)}")
-
-            # Determine if the sets are different (i.e. a mismatch)
-            mismatch = my_kind_defs != test_kind_defs
+            test_kdefs = {z[0] : z[1] for z in
+                          [[x.strip() for x in y.split('=')]
+                           for y in kind_types]}
+            test_kind_keys = test_kdefs.keys()
+            test_kind_set = set(test_kind_keys)
+            mismatch = my_kind_defs != test_kind_set
+            for ref_kind in test_kind_keys:
+                if mismatch:
+                    break
+                # end if
+                mismatch = test_kdefs[ref_kind] != self.__kind_types[ref_kind]
+            # end for
         # end if
         # For SDFs, we need to make sure we have 1-1 files
         # Note that this method will ignore duplicated files.
