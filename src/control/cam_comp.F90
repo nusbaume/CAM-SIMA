@@ -656,6 +656,7 @@ CONTAINS
               units="kg kg-1",                                                          &
               default_value=0._kind_phys,                                               &
               vertical_dim="vertical_layer_dimension",                                  &
+              diag_name="Q",                                                            &
               advected=.true.,                                                          &
            errcode=errflg, errmsg=errmsg)
 
