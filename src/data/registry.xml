@@ -1855,6 +1855,24 @@
     </variable>
 
     <!-- PUMAS Variables -->
+
+    <!-- CACNOTE - temporary placeholder variables needed for PUMAS -->
+
+    <!-- From cldfrc2m.F90-->
+    <variable local_name="rhmini"
+              standard_name="relative_humidity_threshold_for_ice_nucleation"
+              units="fraction" type="real" kind="kind_phys">
+      <initial_value>0.8_kind_phys</initial_value>
+    </variable>
+
+    <!-- From phys_control-->
+    <variable local_name="use_hetfrz_classnuc"
+              standard_name="do_heterogeneous_ice_nucleation"
+              units="flag" type="logical">
+      <initial_value>.false.</initial_value>
+    </variable>
+    <!-- CACNOTE - END temporary placeholder variables needed for PUMAS -->
+
     <variable local_name="relvar_in"
               standard_name="relative_variance_of_subgrid_cloud_condensate_distribution"
               units="1" type="real" kind="kind_phys"
@@ -1923,6 +1941,7 @@
               units="cm-3" type="real" kind="kind_phys"
               allocatable="allocatable">
       <dimensions>horizontal_dimension vertical_layer_dimension</dimensions>
+      <initial_value>0</initial_value>
       <ic_file_input_names>FRZIMM pbuf_FRZIMM</ic_file_input_names>
     </variable>
     <variable local_name="frzcnt_in"
@@ -1930,6 +1949,7 @@
               units="cm-3" type="real" kind="kind_phys"
               allocatable="allocatable">
       <dimensions>horizontal_dimension vertical_layer_dimension</dimensions>
+      <initial_value>0</initial_value>
       <ic_file_input_names>FRZCNT pbuf_FRZCNT</ic_file_input_names>
     </variable>
     <variable local_name="frzdep_in"
@@ -1937,6 +1957,7 @@
               units="cm-3" type="real" kind="kind_phys"
               allocatable="allocatable">
       <dimensions>horizontal_dimension vertical_layer_dimension</dimensions>
+      <initial_value>0</initial_value>
       <ic_file_input_names>FRZDEP pbuf_FRZDEP</ic_file_input_names>
     </variable>
     <variable local_name="micro_accre_enhan_in"
@@ -1945,20 +1966,22 @@
               allocatable="allocatable">
       <dimensions>horizontal_dimension vertical_layer_dimension</dimensions>
       <ic_file_input_names>accre_enhan pbuf_accre_enhan pbuf_ACCRE_ENHAN</ic_file_input_names>
+
+  <!-- CACNOTE: Not sure these snapshot cnst_XXX variables are the same ones - check more carefully -->
     </variable>
     <variable local_name="snowice_tend_external_in"
               standard_name="tendency_of_snow_mixing_ratio_wrt_moist_air_and_condensed_water_from_external"
               units="kg kg-1 s-1" type="real" kind="kind_phys"
               allocatable="allocatable">
       <dimensions>horizontal_dimension vertical_layer_dimension</dimensions>
-      <ic_file_input_names>tnd_qsnow pbuf_tnd_qsnow</ic_file_input_names>
+      <ic_file_input_names>cnst_SNOWQM tnd_qsnow pbuf_tnd_qsnow</ic_file_input_names>
     </variable>
     <variable local_name="numsnow_tend_external_in"
               standard_name="tendency_of_mass_number_concentration_of_snow_wrt_moist_air_and_condensed_water_from_external"
               units="kg-1 s-1" type="real" kind="kind_phys"
               allocatable="allocatable">
       <dimensions>horizontal_dimension vertical_layer_dimension</dimensions>
-      <ic_file_input_names>tnd_nsnow pbuf_tnd_nsnow</ic_file_input_names>
+      <ic_file_input_names>cnst_NUMSNO tnd_nsnow pbuf_tnd_nsnow</ic_file_input_names>
     </variable>
 
   </file>
