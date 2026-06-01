@@ -30,7 +30,6 @@ _FORTRAN_NUMERIC_REGEX = re.compile(r'^[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?(_ki
 
 # CCPP framework imports
 # pylint: disable=wrong-import-position
-from framework_env import CCPPFrameworkEnv
 from parse_tools import validate_xml_file, read_xml_file
 from parse_tools import find_schema_file, find_schema_version
 from parse_tools import init_log, CCPPError, ParseInternalError
