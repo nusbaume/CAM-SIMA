@@ -215,7 +215,7 @@
   <test compset="FCAM7" grid="ne3pg3_ne3pg3_mg37" name="SMS_Ln9" testmods="cam/outfrq_se_cslam_analy_ic">
     <machines>
       <machine name="derecho" compiler="intel" category="dom"/>
-      <machine name="derecho" compiler="gnu" category="aux_sima"/>
+      <machine name="derecho" compiler="gnu" category="dom"/>
     </machines>
     <options>
       <option name="wallclock">00:10:00</option>
