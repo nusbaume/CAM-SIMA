@@ -1,5 +1,5 @@
 [submodule "ccpp-framework"]
-        path          = ccpp_framework
+	path = ccpp_framework_submodule
         url           = https://github.com/climbfuji/ccpp-framework
         fxtag         = 43c17613e3b03041273840a1775502c3c27485fa
         fxrequired    = AlwaysRequired
