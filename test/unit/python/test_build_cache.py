@@ -38,23 +38,33 @@ _PRE_TMP_DIR = os.path.join(_CURRDIR, "tmp")
 _TMP_DIR = os.path.join(_PRE_TMP_DIR, "cam_build_cache")
 _SAMPLES_DIR = os.path.join(_CURRDIR, "sample_files", "build_cache_files")
 _WRITE_INIT_DIR = os.path.join(_CURRDIR, "sample_files", "write_init_files")
-_CCPP_FRAMEWORK = os.path.join(_CAM_ROOT_DIR, "ccpp_framework", 'scripts')
+# capgen-ng compatibility layer (flat-module shims + adapter):
+_COMPAT_DIR = os.path.join(_CAM_CONF_DIR, "capgen_compat")
+# capgen-ng itself (the canonical CCPP code generator):
+_CCPP_FRAMEWORK = os.path.join(_CAM_ROOT_DIR, "ccpp_framework", "capgen-ng")
 
 #Check for all necessary directories:
 if not os.path.exists(_CAM_CONF_DIR):
     _EMSG = f"ERROR: Cannot find required '{_CAM_CONF_DIR}' directory"
     raise ImportError(_EMSG)
 #End if
+if not os.path.exists(_COMPAT_DIR):
+    _EMSG = f"ERROR: Cannot find capgen_compat directory '{_COMPAT_DIR}'"
+    raise ImportError(_EMSG)
+#End if
 if not os.path.exists(_CCPP_FRAMEWORK):
-    _EMSG = f"ERROR: Cannot find CCPP-framework routines in '{_CCPP_FRAMEWORK}'"
+    _EMSG = f"ERROR: Cannot find CCPP framework directory '{_CCPP_FRAMEWORK}'"
     raise ImportError(_EMSG)
 #End if
 
+# Add capgen-ng compat layer FIRST so the flat-module shims win.
+sys.path.insert(0, _COMPAT_DIR)
+
+#Add capgen-ng itself so the compat shims' internal imports resolve:
+sys.path.append(_CCPP_FRAMEWORK)
+
 #Add "cime_config" directory to python path:
 sys.path.append(_CAM_CONF_DIR)
-
-#Add "ccpp_framework" scripts directory to python path:
-sys.path.append(_CCPP_FRAMEWORK)
 
 #Import CAM Build Cache object:
 # pylint: disable=wrong-import-position

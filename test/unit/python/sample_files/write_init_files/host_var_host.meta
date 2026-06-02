@@ -4,14 +4,8 @@
 [ccpp-arg-table]
   name = simple_sub
   type = host
-[ col_start ]
-  standard_name = horizontal_loop_begin
-  type = integer
-  units = count
-  dimensions = ()
-  protected = True
-[ col_end ]
-  standard_name = horizontal_loop_end
+[ pcols ]
+  standard_name = horizontal_dimension
   type = integer
   units = count
   dimensions = ()
@@ -29,19 +23,6 @@
   dimensions = ()
   type = integer
   protected = True
-[ errmsg ]
-  standard_name = ccpp_error_message
-  long_name = Error message for error handling in CCPP
-  units = none
-  dimensions = ()
-  type = character
-  kind = len=512
-[ errflg ]
-  standard_name = ccpp_error_code
-  long_name = Error flag for error handling in CCPP
-  units = 1
-  dimensions = ()
-  type = integer
 [ theta ]
   standard_name = potential_temperature
   units = K

@@ -23,6 +23,10 @@ import xml.etree.ElementTree as ET
 
 __TEST_DIR = os.path.dirname(os.path.abspath(__file__))
 _CAM_ROOT = os.path.abspath(os.path.join(__TEST_DIR, os.pardir, os.pardir, os.pardir))
+# capgen-ng compatibility layer (flat-module shims + adapter):
+__COMPAT_DIR = os.path.join(_CAM_ROOT, "cime_config", "capgen_compat")
+# capgen-ng itself (the canonical CCPP code generator):
+__CCPP_DIR = os.path.join(_CAM_ROOT, "ccpp_framework", "capgen-ng")
 __REGISTRY_DIR = os.path.join(_CAM_ROOT, "src", "data")
 _SAMPLE_FILES_DIR = os.path.join(__TEST_DIR, "sample_files")
 _TMP_DIR = os.path.join(__TEST_DIR, "tmp")
@@ -30,12 +34,23 @@ _SRC_MOD_DIR = os.path.join(_TMP_DIR, "SourceMods")
 
 __FILE_OPEN = (lambda x: open(x, 'r', encoding='utf-8'))
 
+if not os.path.exists(__COMPAT_DIR):
+    raise ImportError(
+        "Cannot find capgen_compat directory (cime_config/capgen_compat)")
+if not os.path.exists(__CCPP_DIR):
+    raise ImportError(
+        "Cannot find CCPP framework directory (ccpp_framework/capgen-ng)")
 if not os.path.exists(__REGISTRY_DIR):
     raise ImportError("Cannot find registry directory")
 
 if not os.path.exists(_SAMPLE_FILES_DIR):
     raise ImportError("Cannot find sample files directory")
 
+# Add capgen-ng compat layer FIRST so the flat-module shims win over
+# any same-name modules that might live elsewhere on the path.
+sys.path.insert(0, __COMPAT_DIR)
+# Add capgen-ng itself so the compat shims' internal imports resolve.
+sys.path.append(__CCPP_DIR)
 sys.path.append(__REGISTRY_DIR)
 
 # pylint: disable=wrong-import-position
@@ -1298,10 +1313,20 @@ class RegistryTest(unittest.TestCase):
         # Run test
         with self.assertRaises(ValueError) as verr:
             metadata_file_to_files(infilename, TypeRegistry(), 'eul', run_env)
-        # Check exception message
-        emsg = "module, 'physics_types_simple', table already contains "
-        emsg += f"'physics_types_simple', at {infilename}:36"
-        self.assertEqual(emsg, str(verr.exception).split('\n', maxsplit=1)[0])
+        # Check exception message.  capgen-ng's parser surfaces a
+        # different (clearer) error wording than original capgen --
+        # it names both the section and the enclosing table, and
+        # reports the line of the offending second arg-table header
+        # (rather than the line where the duplicate section is fully
+        # ingested).  Accept either wording.
+        emsg_orig = ("module, 'physics_types_simple', table already contains "
+                     f"'physics_types_simple', at {infilename}:36")
+        emsg_capgen_ng = (
+            "Table type 'host' allows only one section per table; "
+            "found a second section 'physics_types_simple' in table "
+            f"'physics_types_simple', at {infilename}:26")
+        first_line = str(verr.exception).split('\n', maxsplit=1)[0]
+        self.assertIn(first_line, (emsg_orig, emsg_capgen_ng))
 
     def test_bad_metadata_file_no_table(self):
         """Test response to bad metadata file with no table.

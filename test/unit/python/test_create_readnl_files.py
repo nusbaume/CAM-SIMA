@@ -23,8 +23,11 @@ import xml.etree.ElementTree as ET
 
 _TEST_DIR = os.path.dirname(os.path.abspath(__file__))
 _CAM_ROOT = os.path.abspath(os.path.join(_TEST_DIR, os.pardir, os.pardir, os.pardir))
-_CCPP_DIR = os.path.join(_CAM_ROOT, "ccpp_framework", "scripts")
 _CIME_CONFIG_DIR = os.path.join(_CAM_ROOT, "cime_config")
+# capgen-ng compatibility layer (flat-module shims + adapter):
+_COMPAT_DIR = os.path.join(_CIME_CONFIG_DIR, "capgen_compat")
+# capgen-ng itself (the canonical CCPP code generator):
+_CCPP_DIR = os.path.join(_CAM_ROOT, "ccpp_framework", "capgen-ng")
 _XML_SAMPLES_DIR = os.path.join(_TEST_DIR, "sample_files")
 _NL_SAMPLES_DIR = os.path.join(_XML_SAMPLES_DIR, "namelist_files")
 _PRE_TMP_DIR = os.path.join(_TEST_DIR, "tmp")
@@ -32,8 +35,12 @@ _TMP_DIR = os.path.join(_PRE_TMP_DIR, "namelist_files")
 _SRC_MOD_DIR = os.path.join(_PRE_TMP_DIR, "SourceMods")
 
 #Check for all necessary directories:
+if not os.path.exists(_COMPAT_DIR):
+    EMSG = "Cannot find capgen_compat directory (cime_config/capgen_compat)."
+    raise ImportError(EMSG)
+
 if not os.path.exists(_CCPP_DIR):
-    EMSG = "Cannot find CCPP framework directory where 'ccpp_capgen.py' should be located."
+    EMSG = "Cannot find CCPP framework directory (ccpp_framework/capgen-ng)."
     raise ImportError(EMSG)
 
 if not os.path.exists(_CIME_CONFIG_DIR):
@@ -46,12 +53,10 @@ if not os.path.exists(_XML_SAMPLES_DIR):
 if not os.path.exists(_NL_SAMPLES_DIR):
     raise ImportError("Cannot find 'namelist_files' sample files directory")
 
-#Add CCPP framework directory to python path to
-#import capgen code generator:
+# Add capgen-ng compat layer FIRST so the flat-module shims win.
+sys.path.insert(0, _COMPAT_DIR)
+# Add capgen-ng itself so the compat shims' internal imports resolve.
 sys.path.append(_CCPP_DIR)
-
-#Add registry directory to python path to import
-#registry and 'phys_init' code generators:
 sys.path.append(_CIME_CONFIG_DIR)
 
 # pylint: disable=wrong-import-position

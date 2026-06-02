@@ -80,7 +80,7 @@
   type = integer
   intent = out
 [ccpp-arg-table]
-  name = temp_adjust_finalize
+  name = temp_adjust_final
   type = scheme
 [ errmsg ]
   standard_name = ccpp_error_message

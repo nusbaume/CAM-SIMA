@@ -10,7 +10,7 @@ MODULE temp_adjust
 
   PUBLIC :: temp_adjust_init
   PUBLIC :: temp_adjust_run
-  PUBLIC :: temp_adjust_finalize
+  PUBLIC :: temp_adjust_final
 
 CONTAINS
 
@@ -70,10 +70,10 @@ CONTAINS
 
   end subroutine temp_adjust_init
 
-!> \section arg_table_temp_adjust_finalize  Argument Table
-!! \htmlinclude arg_table_temp_adjust_finalize.html
+!> \section arg_table_temp_adjust_final  Argument Table
+!! \htmlinclude arg_table_temp_adjust_final.html
 !!
-  subroutine temp_adjust_finalize (errmsg, errflg)
+  subroutine temp_adjust_final (errmsg, errflg)
 
     character(len=512),      intent(out)   :: errmsg
     integer,                 intent(out)   :: errflg
@@ -83,6 +83,6 @@ CONTAINS
     errmsg = ''
     errflg = 0
 
-  end subroutine temp_adjust_finalize
+  end subroutine temp_adjust_final
 
 END MODULE temp_adjust

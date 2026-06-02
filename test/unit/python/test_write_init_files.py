@@ -21,7 +21,10 @@ import logging
 
 __TEST_DIR = os.path.dirname(os.path.abspath(__file__))
 _CAM_ROOT = os.path.abspath(os.path.join(__TEST_DIR, os.pardir, os.pardir, os.pardir))
-__CCPP_DIR = os.path.join(_CAM_ROOT, "ccpp_framework", "scripts")
+# capgen-ng compatibility layer (flat-module shims + adapter):
+__COMPAT_DIR = os.path.join(_CAM_ROOT, "cime_config", "capgen_compat")
+# capgen-ng itself (the canonical code generator):
+__CCPP_DIR = os.path.join(_CAM_ROOT, "ccpp_framework", "capgen-ng")
 __REGISTRY_DIR = os.path.join(_CAM_ROOT, "src", "data")
 _REG_SAMPLES_DIR = os.path.join(__TEST_DIR, "sample_files")
 _INIT_SAMPLES_DIR = os.path.join(_REG_SAMPLES_DIR, "write_init_files")
@@ -30,11 +33,29 @@ _TMP_DIR = os.path.join(_PRE_TMP_DIR, "write_init_files")
 _SRC_MOD_DIR = os.path.join(_PRE_TMP_DIR, "SourceMods")
 _INC_SEARCH_DIRS = [_SRC_MOD_DIR, __REGISTRY_DIR]
 
+# Required CCPP control-variable metadata file.  Capgen-ng's
+# _validate_required_control_vars rejects a host that does not declare
+# the eight standard names (suite_name, horizontal_loop_begin / _end,
+# thread_number, number_of_threads, number_of_physics_threads,
+# ccpp_error_code, ccpp_error_message) in a type=control table.  No
+# Fortran module backs the table -- control vars are
+# framework-injected at scheme call sites.  Append this file path to
+# every host_files list passed into capgen().
+_CONTROL_VARS_META = os.path.join(_INIT_SAMPLES_DIR, "ccpp_control_vars.meta")
+
 __FILE_OPEN = (lambda x: open(x, 'r', encoding='utf-8'))
 
 #Check for all necessary directories:
+if not os.path.exists(__COMPAT_DIR):
+    EMSG = ("Cannot find capgen_compat directory "
+            "(cime_config/capgen_compat) where the flat 'ccpp_capgen.py' / "
+            "'parse_tools.py' / 'metadata_table.py' / 'framework_env.py' / "
+            "'ccpp_state_machine.py' / 'fortran_tools.py' shims live.")
+    raise ImportError(EMSG)
+
 if not os.path.exists(__CCPP_DIR):
-    EMSG = "Cannot find CCPP framework directory where 'ccpp_capgen.py' should be located."
+    EMSG = ("Cannot find CCPP framework directory (ccpp_framework/capgen-ng) "
+            "where 'ccpp_capgen_ng.py' should be located.")
     raise ImportError(EMSG)
 
 if not os.path.exists(__REGISTRY_DIR):
@@ -47,8 +68,10 @@ if not os.path.exists(_REG_SAMPLES_DIR):
 if not os.path.exists(_INIT_SAMPLES_DIR):
     raise ImportError("Cannot find 'write_init_files' sample files directory")
 
-#Add CCPP framework directory to python path to
-#import capgen code generator:
+# Add capgen-ng compat layer FIRST so the flat-module shims win over
+# any same-name modules that might live elsewhere on the path.
+sys.path.insert(0, __COMPAT_DIR)
+# Add capgen-ng itself so the compat shims' internal imports resolve.
 sys.path.append(__CCPP_DIR)
 
 #Add registry directory to python path to import
@@ -136,7 +159,7 @@ class WriteInitTest(unittest.TestCase):
         scheme_files = os.path.join(_INIT_SAMPLES_DIR, "temp_adjust.meta")
         cap_datafile = os.path.join(_TMP_DIR, "datatable_simple.xml")
 
-        host_files = [model_host, out_meta]
+        host_files = [model_host, out_meta, _CONTROL_VARS_META]
 
         # Setup write_init_files inputs:
         vic_name = "phys_vars_init_check_simple.F90"
@@ -219,7 +242,7 @@ class WriteInitTest(unittest.TestCase):
         scheme_files = os.path.join(_INIT_SAMPLES_DIR, "temp_adjust_cnst.meta")
         cap_datafile = os.path.join(_TMP_DIR, "datatable_cnst.xml")
 
-        host_files = [model_host, out_meta]
+        host_files = [model_host, out_meta, _CONTROL_VARS_META]
 
         # Setup write_init_files inputs:
         vic_name = "phys_vars_init_check_cnst.F90"
@@ -302,7 +325,7 @@ class WriteInitTest(unittest.TestCase):
         scheme_files = os.path.join(_INIT_SAMPLES_DIR, "temp_adjust.meta")
         cap_datafile = os.path.join(_TMP_DIR, "datatable_simple.xml")
 
-        host_files = [model_host, out_meta]
+        host_files = [model_host, out_meta, _CONTROL_VARS_META]
 
         # Setup write_init_files inputs:
         vic_name = "phys_vars_init_check_initial_value.F90"
@@ -385,7 +408,7 @@ class WriteInitTest(unittest.TestCase):
         scheme_files = os.path.join(_INIT_SAMPLES_DIR, "temp_adjust_noreq.meta")
         cap_datafile = os.path.join(_TMP_DIR, "datatable_no_req_var.xml")
 
-        host_files = [model_host, out_meta]
+        host_files = [model_host, out_meta, _CONTROL_VARS_META]
 
         # Setup write_init_files inputs:
         vic_name = "phys_vars_init_check_noreq.F90"
@@ -467,7 +490,7 @@ class WriteInitTest(unittest.TestCase):
         scheme_files = os.path.join(_INIT_SAMPLES_DIR, "temp_adjust.meta")
         cap_datafile = os.path.join(_TMP_DIR, "datatable_protected.xml")
 
-        host_files = [model_host, out_meta]
+        host_files = [model_host, out_meta, _CONTROL_VARS_META]
 
         # Setup write_init_files inputs:
         vic_name = "phys_vars_init_check_protect.F90"
@@ -551,7 +574,7 @@ class WriteInitTest(unittest.TestCase):
         scheme_files = os.path.join(_INIT_SAMPLES_DIR, "temp_adjust.meta")
         cap_datafile = os.path.join(_TMP_DIR, "datatable_host_var.xml")
 
-        host_files = [model_host, out_meta]
+        host_files = [model_host, out_meta, _CONTROL_VARS_META]
 
         # Setup write_init_files inputs:
         vic_name = "phys_vars_init_check_host_var.F90"
@@ -637,7 +660,7 @@ class WriteInitTest(unittest.TestCase):
                                     "temp_adjust_no_horiz.meta")
         cap_datafile = os.path.join(_TMP_DIR, "datatable_no_horiz.xml")
 
-        host_files = [model_host, out_meta]
+        host_files = [model_host, out_meta, _CONTROL_VARS_META]
 
         # Setup write_init_files inputs:
         vic_name = "phys_vars_init_check_no_horiz.F90"
@@ -711,7 +734,7 @@ class WriteInitTest(unittest.TestCase):
                                     "temp_adjust_scalar.meta")
         cap_datafile = os.path.join(_TMP_DIR, "datatable_scalar.xml")
 
-        host_files = [model_host, out_meta]
+        host_files = [model_host, out_meta, _CONTROL_VARS_META]
 
         # Setup write_init_files inputs:
         vic_name = "phys_vars_init_check_scalar.F90"
@@ -787,7 +810,7 @@ class WriteInitTest(unittest.TestCase):
         scheme_files = os.path.join(_INIT_SAMPLES_DIR, "temp_adjust_4D.meta")
         cap_datafile = os.path.join(_TMP_DIR, "datatable_4D.xml")
 
-        host_files = [model_host, out_meta]
+        host_files = [model_host, out_meta, _CONTROL_VARS_META]
 
 
         # Setup write_init_files inputs:
@@ -864,7 +887,7 @@ class WriteInitTest(unittest.TestCase):
         scheme_files = os.path.join(_INIT_SAMPLES_DIR, "temp_adjust.meta")
         cap_datafile = os.path.join(_TMP_DIR, "datatable_ddt.xml")
 
-        host_files = [model_host, out_meta]
+        host_files = [model_host, out_meta, _CONTROL_VARS_META]
 
         # Setup write_init_files inputs:
         vic_name = "phys_vars_init_check_ddt.F90"
@@ -944,7 +967,7 @@ class WriteInitTest(unittest.TestCase):
         scheme_files = os.path.join(_INIT_SAMPLES_DIR, "temp_adjust.meta")
         cap_datafile = os.path.join(_TMP_DIR, "datatable_ddt2.xml")
 
-        host_files = [model_host, out_meta]
+        host_files = [model_host, out_meta, _CONTROL_VARS_META]
 
         # Setup write_init_files outputs:
         vic_name = "phys_vars_init_check_ddt2.F90"
@@ -1026,7 +1049,7 @@ class WriteInitTest(unittest.TestCase):
         scheme_files = os.path.join(_INIT_SAMPLES_DIR, "temp_adjust.meta")
         cap_datafile = os.path.join(_TMP_DIR, "datatable_ddt_array.xml")
 
-        host_files = [model_host, out_meta]
+        host_files = [model_host, out_meta, _CONTROL_VARS_META]
 
         # Setup write_init_files inputs:
         vic_name = "phys_vars_init_check_ddt_array.F90"
@@ -1107,7 +1130,7 @@ class WriteInitTest(unittest.TestCase):
         scheme_files = os.path.join(_INIT_SAMPLES_DIR, "temp_adjust.meta")
         cap_datafile = os.path.join(_TMP_DIR, "datatable_mf.xml")
 
-        host_files = [model_host, model_mf_file, out_meta]
+        host_files = [model_host, model_mf_file, out_meta, _CONTROL_VARS_META]
 
         # Setup write_init_files inputs:
         vic_name = "phys_vars_init_check_mf.F90"
@@ -1188,7 +1211,7 @@ class WriteInitTest(unittest.TestCase):
         scheme_files = os.path.join(_INIT_SAMPLES_DIR, "temp_adjust_param.meta")
         cap_datafile = os.path.join(_TMP_DIR, "datatable_param.xml")
 
-        host_files = [model_host, out_meta]
+        host_files = [model_host, out_meta, _CONTROL_VARS_META]
 
         # Setup write_init_files inputs:
         vic_name = "phys_vars_init_check_param.F90"
@@ -1272,7 +1295,7 @@ class WriteInitTest(unittest.TestCase):
         scheme_files = os.path.join(_INIT_SAMPLES_DIR, "temp_adjust_bvd.meta")
         cap_datafile = os.path.join(_TMP_DIR, "datatable_bad_vertdim.xml")
 
-        host_files = [model_host, out_meta]
+        host_files = [model_host, out_meta, _CONTROL_VARS_META]
 
         # Setup write_init_files inputs:
         vic_name = "phys_vars_init_check_bvd.F90"
@@ -1349,7 +1372,7 @@ class WriteInitTest(unittest.TestCase):
         scheme_files = os.path.join(_INIT_SAMPLES_DIR, "temp_adjust_constituent_dim.meta")
         cap_datafile = os.path.join(_TMP_DIR, "datatable_constituent_dim.xml")
 
-        host_files = [model_host, out_meta]
+        host_files = [model_host, out_meta, _CONTROL_VARS_META]
 
         # Setup write_init_files inputs:
         vic_name = "phys_vars_init_check_constituent_dim.F90"

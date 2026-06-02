@@ -10,18 +10,6 @@
   units = count
   dimensions = ()
   protected = True
-[ col_start ]
-  standard_name = horizontal_loop_begin
-  type = integer
-  units = count
-  dimensions = ()
-  protected = True
-[ col_end ]
-  standard_name = horizontal_loop_end
-  type = integer
-  units = count
-  dimensions = ()
-  protected = True
 [ dtime_phys ]
   standard_name = timestep_for_physics
   type = real | kind = kind_phys
@@ -35,16 +23,18 @@
   dimensions = ()
   type = integer
   protected = True
-[ errmsg ]
-  standard_name = ccpp_error_message
-  long_name = Error message for error handling in CCPP
-  units = none
-  dimensions = ()
-  type = character
-  kind = len=512
-[ errflg ]
-  standard_name = ccpp_error_code
-  long_name = Error flag for error handling in CCPP
-  units = 1
+# Framework-managed constituent count.  capgen-ng's resolver needs to
+# find this standard name when a host variable carries
+# ``number_of_ccpp_constituents`` as a dimension (e.g. constituent
+# tendency arrays).  Production CAM-SIMA exposes it from
+# cam_constituents via ``use cam_constituents, only:
+# number_of_ccpp_constituents=>num_constituents``; the test fixture
+# stands it up as a host-table entry so the resolver lookup succeeds
+# without dragging cam_constituents.meta into the test's host_files.
+[ num_consts ]
+  standard_name = number_of_ccpp_constituents
+  long_name = number of CCPP constituents
+  units = count
   dimensions = ()
   type = integer
+  protected = True

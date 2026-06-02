@@ -1,9 +1,9 @@
 [ccpp-table-properties]
   name  = ref_pres
-  type  = module
+  type  = host
 [ccpp-arg-table]
   name  = ref_pres
-  type  = module
+  type  = host
 [ pref_edge ]
   standard_name = reference_pressure_at_interface
   units = Pa
