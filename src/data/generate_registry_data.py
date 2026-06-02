@@ -35,6 +35,7 @@ from parse_tools import find_schema_file, find_schema_version
 from parse_tools import init_log, CCPPError, ParseInternalError
 from metadata_table import parse_metadata_file
 from fortran_tools import FortranWriter
+from framework_env import CCPPFrameworkEnv
 # pylint: enable=wrong-import-position
 
 ###############################################################################
@@ -1059,7 +1060,19 @@ class VarDict(OrderedDict):
         return self.values()
 
     def write_metadata(self, outfile):
-        """Write out the variables in this dictionary as CCPP metadata"""
+        """Write out the variables in this dictionary as CCPP metadata.
+
+        The ``type =`` attribute uses CAM-SIMA's original-capgen
+        vocabulary (``host`` / ``module`` / ``ddt``).  The
+        capgen_compat layer's ``metadata_table`` shim rewrites
+        ``type = module`` to ``type = host`` at parse time so
+        capgen-ng's stricter parser accepts the file, and records the
+        affected table names in ``MODULE_ORIGIN_TABLE_NAMES`` so the
+        ``_VarWrapper`` can preserve original capgen's
+        ``source.ptype = 'module'`` classification -- which
+        ``write_init_files.py`` needs to decide which variables to
+        allocate and initialise.
+        """
         outfile.write('[ccpp-table-properties]\n')
         outfile.write(f'  name = {self.name}\n')
         outfile.write(f'  type = {self.module_type}\n')

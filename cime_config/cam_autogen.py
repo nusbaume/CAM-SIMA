@@ -24,9 +24,22 @@ import glob
 _CIME_CONFIG_DIR = os.path.dirname(os.path.abspath(__file__))
 _CAM_ROOT_DIR = os.path.dirname(_CIME_CONFIG_DIR)
 _REG_GEN_DIR = os.path.abspath(os.path.join(_CAM_ROOT_DIR, "src", "data"))
-_CCPP_FRAMEWORK_DIR = os.path.join(_CAM_ROOT_DIR, "ccpp_framework", "scripts")
-# Add CCPP-framework path to python path:
+# capgen-ng compatibility layer: holds the flat ``ccpp_capgen`` /
+# ``parse_tools`` / ``metadata_table`` / ``framework_env`` /
+# ``ccpp_state_machine`` / ``fortran_tools`` shims that adapt
+# capgen-ng to CAM-SIMA's original-capgen import surface.  See
+# cime_config/capgen_compat/README.md for the contract and removal
+# procedure.
+_CCPP_FRAMEWORK_DIR = os.path.join(_CIME_CONFIG_DIR, "capgen_compat")
+# capgen-ng itself (the canonical CCPP code generator) lives under
+# ccpp_framework/capgen-ng as a fleximod-pinned external.  The compat
+# shims import ``ccpp_capgen_ng`` and ``metadata.parse_tools`` from
+# here.
+_CCPP_CAPGEN_NG_DIR = os.path.join(_CAM_ROOT_DIR, "ccpp_framework",
+                                   "capgen-ng")
+# Add CCPP-framework paths to python path:
 sys.path.append(_CCPP_FRAMEWORK_DIR)
+sys.path.append(_CCPP_CAPGEN_NG_DIR)
 # Add registry generator path to python path:
 sys.path.append(_REG_GEN_DIR)
 
@@ -61,6 +74,7 @@ except ImportError as ierr:
 #pylint: enable=wrong-import-position
 # Cleanup python path
 sys.path.remove(_CCPP_FRAMEWORK_DIR)
+sys.path.remove(_CCPP_CAPGEN_NG_DIR)
 sys.path.remove(_REG_GEN_DIR)
 
 # Acquire python logger:
