@@ -84,6 +84,29 @@ class TestCallList(unittest.TestCase):
         db = CapDatabase({}, [sr])
         self.assertEqual(len(db.call_list('init').variable_list()), 1)
 
+    def test_call_list_drops_suite_internal_args(self):
+        # Capgen-ng tags vars produced by one scheme and consumed by
+        # another within the same suite (e.g. air_potential_temperature,
+        # dimensionless_exner_function, scheme_name in CAM-SIMA's
+        # kessler suite) with source='suite'.  Those must not appear
+        # on the call list -- original capgen's contract treats every
+        # call-list entry as host-required, and
+        # write_init_files.gather_ccpp_req_vars would mis-flag them
+        # as "missing required host variables".  source='host' /
+        # 'control' / 'constituent' all stay.
+        rc = _StubResolvedCall('s', 'run', [
+            _StubResolvedArg(standard_name='from_host', source='host'),
+            _StubResolvedArg(standard_name='from_suite', source='suite'),
+            _StubResolvedArg(standard_name='from_control', source='control'),
+            _StubResolvedArg(standard_name='from_const', source='constituent'),
+        ])
+        sr = _StubSuiteResolution(
+            's', [_StubResolvedGroup('g', {'run': [rc]})])
+        db = CapDatabase({}, [sr])
+        stds = {w.get_prop_value('standard_name')
+                for w in db.call_list('run').variable_list()}
+        self.assertEqual(stds, {'from_host', 'from_control', 'from_const'})
+
 
 class TestPhaseAlias(unittest.TestCase):
 

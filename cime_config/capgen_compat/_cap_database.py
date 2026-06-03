@@ -118,11 +118,26 @@ class CapDatabase:
 
         self._per_phase = per_phase
 
-    @staticmethod
-    def _collect(rc, per_phase: Dict[str, List], seen: Set) -> None:
+    # ResolvedArg.source values capgen-ng emits.  Original capgen's
+    # ``call_list(phase).variable_list()`` contract is *host-facing*:
+    # every entry must be lookup-able in the host_dict (or, for
+    # is_const-tagged args, in the constituent system).  Capgen-ng's
+    # resolver explicitly carves out a third category --
+    # ``source='suite'`` -- for vars produced by one scheme and
+    # consumed by another within the same suite (suite_data).  Those
+    # never appear in the host_dict by design and must not surface on
+    # the call list, otherwise ``write_init_files.gather_ccpp_req_vars``
+    # mis-flags them as "missing required host variables".  Drop them
+    # here.
+    _SUITE_INTERNAL_SOURCES = frozenset({'suite'})
+
+    @classmethod
+    def _collect(cls, rc, per_phase: Dict[str, List], seen: Set) -> None:
         phase = rc.phase
         bucket = per_phase.setdefault(phase, [])
         for arg in rc.args:
+            if getattr(arg, 'source', None) in cls._SUITE_INTERNAL_SOURCES:
+                continue
             key = (rc.scheme_name, phase, arg.standard_name)
             if key in seen:
                 continue
