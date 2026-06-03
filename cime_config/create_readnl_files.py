@@ -17,15 +17,20 @@ import sys
 import logging
 import math
 
-# Find and include the ccpp-framework scripts directory
-# Assume we are in <CAMROOT>/cime_config and SPIN is in <CAMROOT>/ccpp_framework
+# Find and include both the capgen_compat flat-shim directory and
+# the capgen-ng external.  See cime_config/capgen_compat/README.md.
 _CURRDIR = os.path.abspath(os.path.dirname(__file__))
 _CAMROOT = os.path.abspath(os.path.join(_CURRDIR, os.pardir))
-_SPINSCRIPTS = os.path.join(_CAMROOT, "ccpp_framework", 'scripts')
+_COMPAT_DIR = os.path.join(_CURRDIR, "capgen_compat")
+_SPINSCRIPTS = os.path.join(_CAMROOT, "ccpp_framework", "capgen-ng")
 _XML_SCHEMAS = os.path.join(_CAMROOT, "cime", "CIME", "data", "config",
                             "xml_schemas")
 _PG_SCHEMAS = os.path.join(_CAMROOT, "cime", "CIME", "ParamGen",
                            "xml_schema")
+# Insert compat dir at the front so flat-shim modules win the resolve.
+if _COMPAT_DIR not in sys.path:
+    sys.path.insert(0, _COMPAT_DIR)
+# end if
 if _SPINSCRIPTS not in sys.path:
     sys.path.append(_SPINSCRIPTS)
 # end if

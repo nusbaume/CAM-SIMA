@@ -10,11 +10,16 @@ import os
 import re
 import sys
 
-# Find and include the ccpp-framework scripts directory
-# Assume we are in <CAMROOT>/src/data and CCPP is in <CAMROOT>/ccpp_framework
+# Find and include both the capgen_compat flat-shim directory and
+# the capgen-ng external.  See cime_config/capgen_compat/README.md.
 __CURRDIR = os.path.abspath(os.path.dirname(__file__))
 __CAMROOT = os.path.abspath(os.path.join(__CURRDIR, os.pardir))
-__CCPPSCRIPTS = os.path.join(__CAMROOT, "ccpp_framework", 'scripts')
+__COMPAT_DIR = os.path.join(__CURRDIR, "capgen_compat")
+__CCPPSCRIPTS = os.path.join(__CAMROOT, "ccpp_framework", "capgen-ng")
+# Insert compat dir at the front so flat-shim modules win the resolve.
+if __COMPAT_DIR not in sys.path:
+    sys.path.insert(0, __COMPAT_DIR)
+# end if
 if __CCPPSCRIPTS not in sys.path:
     sys.path.append(__CCPPSCRIPTS)
 # end if
