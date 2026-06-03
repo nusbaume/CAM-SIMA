@@ -32,14 +32,24 @@ class TestCCPPFrameworkEnv(unittest.TestCase):
                                legacy_mode=False)
         self.assertFalse(env.legacy_mode)
 
+    def test_legacy_auto_clone_constituents_defaults_to_true(self):
+        # CAM-SIMA's atmospheric_physics tree relies on
+        # original-capgen's auto-clone-static-constituent path: ~16
+        # schemes declare advected=True on _run args and let the
+        # framework register the constituent on their behalf.  Without
+        # the shim capgen-ng rejects them.  Single-instance only;
+        # capgen-ng's runner aborts before parsing if the host opts
+        # into multi-instance, so the default is safe for any
+        # single-instance CAM-SIMA build.
+        env = CCPPFrameworkEnv(logging.getLogger('test'))
+        self.assertTrue(env.legacy_auto_clone_constituents)
+
     def test_other_shims_default_off(self):
-        # gfs_dim_aliases and legacy_auto_clone_constituents stay off
-        # by default -- they have no overlap with CAM-SIMA's known
-        # metadata patterns and would emit noisy banners if enabled
-        # unconditionally.
+        # gfs_dim_aliases stays off by default -- it targets GFS
+        # radiation/composition vertical-dim spellings that CAM-SIMA
+        # metadata doesn't use.
         env = CCPPFrameworkEnv(logging.getLogger('test'))
         self.assertFalse(env.gfs_dim_aliases or False)
-        self.assertFalse(env.legacy_auto_clone_constituents or False)
 
     def test_kwargs_recorded(self):
         env = CCPPFrameworkEnv(
