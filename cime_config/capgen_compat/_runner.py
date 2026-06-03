@@ -17,6 +17,7 @@ routes through ``write_if_changed`` (so re-running is always cheap).
 """
 
 import logging
+import os
 from typing import Dict, Tuple
 
 from _cap_database import CapDatabase
@@ -116,8 +117,7 @@ def capgen(run_env, return_db: bool = False):
     cn_kwargs.setdefault('kind_types', {})
 
     for ignored in ('generate_docfiles', 'use_error_obj',
-                    'force_overwrite', 'preproc_directives',
-                    'ccpp_datafile'):
+                    'force_overwrite', 'preproc_directives'):
         value = getattr(run_env, ignored, None)
         if value is not None:
             logger.debug(
@@ -125,6 +125,16 @@ def capgen(run_env, return_db: bool = False):
                 "%r=%r (no capgen-ng equivalent)",
                 ignored, value,
             )
+
+    # ``ccpp_datafile`` is the path original capgen wrote its
+    # ``ccpp_datatable.xml`` to and is the same path CAM-SIMA's
+    # ``cam_autogen.py`` reads back via ``datatable_report``.
+    # Capgen-ng hardcodes its datatable basename to ``datatable.xml``
+    # under ``output_root``, so handle the rename ourselves after
+    # ``_capgen_ng`` completes.  Captured before the call so we can
+    # rename right after; if the requested basename matches what
+    # capgen-ng already produced (``datatable.xml``), this is a no-op.
+    requested_datafile = getattr(run_env, 'ccpp_datafile', None)
 
     cn_kwargs['return_state'] = True
     cn_kwargs['logger'] = logger
@@ -160,6 +170,40 @@ def capgen(run_env, return_db: bool = False):
 
     host_dict, suite_resolutions = _capgen_ng(**cn_kwargs)
 
+    if requested_datafile:
+        _rename_datatable(cn_kwargs['output_root'],
+                          requested_datafile, logger)
+
     if not return_db:
         return None
     return CapDatabase(host_dict, suite_resolutions)
+
+
+def _rename_datatable(output_root, requested_path, logger):
+    """Bridge capgen-ng's fixed ``datatable.xml`` to the path CAM-SIMA wants.
+
+    Capgen-ng always writes ``<output_root>/datatable.xml``; CAM-SIMA's
+    ``cam_autogen.py`` and any tooling chained off ``CCPPFrameworkEnv.
+    ccpp_datafile`` read back from the requested path.  If they already
+    agree (basename ``datatable.xml`` under ``output_root``), this is a
+    no-op.  Otherwise, rename in place — same directory keeps the move
+    atomic; cross-directory ``requested_path`` is supported via shutil.
+    """
+    import shutil
+    produced = os.path.join(os.path.abspath(output_root), 'datatable.xml')
+    target = os.path.abspath(requested_path)
+    if produced == target:
+        return
+    if not os.path.isfile(produced):
+        logger.warning(
+            "capgen_compat: cannot rename datatable -- capgen-ng did "
+            "not write %r (looked under output_root=%r)",
+            produced, output_root,
+        )
+        return
+    os.makedirs(os.path.dirname(target) or '.', exist_ok=True)
+    shutil.move(produced, target)
+    logger.debug(
+        "capgen_compat: renamed datatable %r -> %r (CAM-SIMA convention)",
+        produced, target,
+    )
