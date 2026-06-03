@@ -18,18 +18,10 @@
   dimensions = ()
   type = integer
   protected = True
-[ col_start ]
-  standard_name = horizontal_loop_begin
-  units = count
-  dimensions = ()
-  type = integer
-  protected = True
-[ col_end ]
-  standard_name = horizontal_loop_end
-  units = count
-  dimensions = ()
-  type = integer
-  protected = True
+# col_start (horizontal_loop_begin) and col_end (horizontal_loop_end)
+# moved to src/data/ccpp_control_vars.meta -- capgen-ng requires them
+# in a type = control table because they are framework-injected at
+# each ccpp_physics_run call.
 [ phys_grid_initialized ]
   standard_name = flag_for_physics_grid_initialization
   units = flag

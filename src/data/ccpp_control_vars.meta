@@ -1,0 +1,75 @@
+########################################################################
+# Required CCPP control variables for capgen-ng.
+#
+# Control variables are *framework-injected* at scheme call sites --
+# they have no backing Fortran module.  The host's driver code creates
+# the values and passes them as arguments to ccpp_register, ccpp_init,
+# ccpp_physics_register / _init / _timestep_init / _run /
+# _timestep_final / _final.  Capgen-ng's static API generator uses the
+# local_name in each [ name ] block as the dummy argument name in the
+# generated public-entry-point signatures.
+#
+# Every host must declare these eight standard names in a control
+# table.  Capgen-ng's _validate_required_control_vars enforces the
+# list.  Local names below match the conventions used elsewhere in
+# CAM-SIMA's host driver code; rename here if the driver uses a
+# different spelling.
+########################################################################
+[ccpp-table-properties]
+  name = ccpp_control_vars
+  type = control
+
+[ccpp-arg-table]
+  name = ccpp_control_vars
+  type = control
+
+[ suite_name ]
+  standard_name = suite_name
+  long_name = name of the CCPP suite to dispatch to
+  units = none
+  dimensions = ()
+  type = character
+  kind = len=256
+[ col_start ]
+  standard_name = horizontal_loop_begin
+  long_name = start of horizontal range for this phase
+  units = index
+  dimensions = ()
+  type = integer
+[ col_end ]
+  standard_name = horizontal_loop_end
+  long_name = end of horizontal range for this phase
+  units = index
+  dimensions = ()
+  type = integer
+[ thread_num ]
+  standard_name = thread_number
+  long_name = current OpenMP thread number (1 if single-threaded)
+  units = 1
+  dimensions = ()
+  type = integer
+[ nthreads ]
+  standard_name = number_of_threads
+  long_name = total number of OpenMP threads (1 if single-threaded)
+  units = 1
+  dimensions = ()
+  type = integer
+[ nphys_threads ]
+  standard_name = number_of_physics_threads
+  long_name = physics-internal thread budget (1 if unused)
+  units = 1
+  dimensions = ()
+  type = integer
+[ errmsg ]
+  standard_name = ccpp_error_message
+  long_name = error message for CCPP error handling
+  units = none
+  dimensions = ()
+  type = character
+  kind = len=512
+[ errflg ]
+  standard_name = ccpp_error_code
+  long_name = error flag for CCPP error handling
+  units = 1
+  dimensions = ()
+  type = integer

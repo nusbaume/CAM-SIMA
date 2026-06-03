@@ -580,6 +580,17 @@ def generate_physics_suites(build_cache, preproc_defs, host_name,
     # Add in files generated from the registry:
     host_files.extend(reg_files)
 
+    # Required CCPP control variables (suite_name, horizontal_loop_*,
+    # thread_number, number_of_threads, number_of_physics_threads,
+    # ccpp_error_code, ccpp_error_message).  Capgen-ng requires these
+    # in a type = control table; no Fortran backs them (the host driver
+    # supplies the values as args to ccpp_physics_*).
+    _control_vars_meta = os.path.join(
+        atm_root, "src", "data", "ccpp_control_vars.meta")
+    if os.path.isfile(_control_vars_meta):
+        host_files.append(_control_vars_meta)
+    # end if
+
     # Convert preproc defs to string:
     if preproc_defs:
         preproc_cache_str = ', '.join(preproc_defs)

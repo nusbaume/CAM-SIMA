@@ -509,19 +509,10 @@
               units="s" type = "integer">
       <long_name>number of seconds until next shortwave radiation timestep</long_name>
     </variable>
-    <!-- Error handling variables -->
-    <variable local_name="errcode"
-              standard_name="ccpp_error_code"
-              units="1" type="integer">
-      <long_name>ccpp error code</long_name>
-      <initial_value>0</initial_value>
-    </variable>
-    <variable local_name="errmsg"
-              standard_name="ccpp_error_message"
-              units="none" type="character" kind="len=512">
-      <long_name>ccpp error message</long_name>
-      <initial_value>''</initial_value>
-    </variable>
+    <!-- Error handling variables (ccpp_error_code, ccpp_error_message)
+         moved to src/data/ccpp_control_vars.meta -- capgen-ng requires
+         them in a type = control table because they are
+         framework-injected at each ccpp_physics_* call. -->
     <!-- SIMA History (diagnostic output) variables -->
     <variable local_name="fillvalue"
               standard_name="fill_value_for_diagnostic_output"
