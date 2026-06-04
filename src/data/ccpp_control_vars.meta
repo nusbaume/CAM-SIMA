@@ -30,6 +30,13 @@
   dimensions = ()
   type = character
   kind = len=256
+[ group_name ]
+  standard_name = group_name
+  long_name = name of the CCPP suite to dispatch to
+  units = none
+  dimensions = ()
+  type = character
+  kind = len=256
 [ col_start ]
   standard_name = horizontal_loop_begin
   long_name = start of horizontal range for this phase

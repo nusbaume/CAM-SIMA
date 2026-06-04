@@ -3,6 +3,7 @@ module phys_comp
    use ccpp_kinds,    only: kind_phys
    use shr_kind_mod,  only: SHR_KIND_CS, SHR_KIND_CL
    use runtime_obj,   only: unset_str
+   use physics_grid,  only: columns_on_task
 
    implicit none
    private
@@ -175,12 +176,12 @@ CONTAINS
 
    subroutine phys_init()
       use cam_abortutils,       only: endrun
-      use physics_grid,         only: columns_on_task
       use vert_coord,           only: pver, pverp
       use cam_thermo,           only: cam_thermo_init
       use cam_thermo_formula,   only: cam_thermo_formula_init
       use physics_types,        only: allocate_physics_types_fields
       use cam_ccpp_cap,         only: ccpp_init
+      use cam_ccpp_cap,         only: ccpp_physics_init
 
       call cam_thermo_init(columns_on_task, pver, pverp)
       call cam_thermo_formula_init()
