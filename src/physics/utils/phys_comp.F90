@@ -143,7 +143,7 @@ CONTAINS
    end subroutine phys_readnl
 
    subroutine phys_register()
-      use cam_ccpp_cap,         only: cam_ccpp_physics_register
+      use cam_ccpp_cap,         only: ccpp_register
       use cam_ccpp_cap,         only: ccpp_physics_suite_part_list
       use cam_abortutils,       only: endrun
 
@@ -165,9 +165,9 @@ CONTAINS
          end if
       end do
       ! Call CCPP register phase
-      call cam_ccpp_physics_register(phys_suite_name)
+      call ccpp_register(phys_suite_name)
       if (errcode /= 0) then
-         call endrun('cam_ccpp_physics_register: '//trim(errmsg))
+         call endrun('ccpp_register: '//trim(errmsg))
       end if
 
    end subroutine phys_register
@@ -179,7 +179,7 @@ CONTAINS
       use cam_thermo,           only: cam_thermo_init
       use cam_thermo_formula,   only: cam_thermo_formula_init
       use physics_types,        only: allocate_physics_types_fields
-      use cam_ccpp_cap,         only: cam_ccpp_physics_initialize
+      use cam_ccpp_cap,         only: ccpp_init
 
       call cam_thermo_init(columns_on_task, pver, pverp)
       call cam_thermo_formula_init()
@@ -188,9 +188,9 @@ CONTAINS
       call allocate_physics_types_fields(set_init_val_in=.true., reallocate_in=.false.)
 
       !Run CCPP "init" phase:
-      call cam_ccpp_physics_initialize(phys_suite_name)
+      call ccpp_init(phys_suite_name)
       if (errcode /= 0) then
-         call endrun('cam_ccpp_physics_initialize: '//trim(errmsg))
+         call endrun('ccpp_init: '//trim(errmsg))
       end if
 
    end subroutine phys_init
@@ -203,7 +203,7 @@ CONTAINS
       use time_manager,   only: is_first_restart_step
       use time_manager,   only: get_nstep
       use cam_abortutils, only: endrun
-      use cam_ccpp_cap,   only: cam_ccpp_physics_timestep_initial
+      use cam_ccpp_cap,   only: ccpp_physics_timestep_init
       use time_manager,   only: is_first_step
       use runtime_obj,    only: cam_runtime_opts
 
@@ -245,36 +245,36 @@ CONTAINS
       end if
 
       ! Initialize the physics time step
-      call cam_ccpp_physics_timestep_initial(phys_suite_name)
+      call ccpp_physics_timestep_init(phys_suite_name)
       if (errcode /= 0) then
-         call endrun('cam_ccpp_physics_timestep_initial: '//trim(errmsg))
+         call endrun('ccpp_physics_timestep_init: '//trim(errmsg))
       end if
 
    end subroutine phys_timestep_init
 
    subroutine phys_run1()
-      use cam_ccpp_cap,   only: cam_ccpp_physics_run
+      use cam_ccpp_cap,   only: ccpp_physics_run
       use cam_abortutils, only: endrun
 
       ! Run before coupler group if it exists
       if (any('physics_before_coupler' == suite_parts)) then
-         call cam_ccpp_physics_run(phys_suite_name, 'physics_before_coupler')
+         call ccpp_physics_run(phys_suite_name, 'physics_before_coupler')
          if (errcode /= 0) then
-            call endrun('cam_ccpp_physics_run: '//trim(errmsg))
+            call endrun('ccpp_physics_run: '//trim(errmsg))
          end if
       end if
 
    end subroutine phys_run1
 
    subroutine phys_run2()
-      use cam_ccpp_cap,   only: cam_ccpp_physics_run
+      use cam_ccpp_cap,   only: ccpp_physics_run
       use cam_abortutils, only: endrun
 
       ! Run after coupler group if it exists
       if (any('physics_after_coupler' == suite_parts)) then
-         call cam_ccpp_physics_run(phys_suite_name, 'physics_after_coupler')
+         call ccpp_physics_run(phys_suite_name, 'physics_after_coupler')
          if (errcode /= 0) then
-            call endrun('cam_ccpp_physics_run: '//trim(errmsg))
+            call endrun('ccpp_physics_run: '//trim(errmsg))
          end if
       end if
 
@@ -284,7 +284,7 @@ CONTAINS
       use time_manager,   only: get_nstep
       use cam_abortutils, only: endrun
       use cam_initfiles,  only: unset_path_str
-      use cam_ccpp_cap,   only: cam_ccpp_physics_timestep_final
+      use cam_ccpp_cap,   only: ccpp_physics_timestep_final
       use physics_inputs, only: physics_check_data
 
       ! Subroutine inputs
@@ -294,9 +294,9 @@ CONTAINS
       integer             :: data_frame
 
       ! Finalize the time step
-      call cam_ccpp_physics_timestep_final(phys_suite_name)
+      call ccpp_physics_timestep_final(phys_suite_name)
       if (errcode /= 0) then
-         call endrun('cam_ccpp_physics_timestep_final: '//trim(errmsg))
+         call endrun('ccpp_physics_timestep_final: '//trim(errmsg))
       end if
 
       ! data_frame is the next input frame for
@@ -315,12 +315,12 @@ CONTAINS
    end subroutine phys_timestep_final
 
    subroutine phys_final()
-      use cam_ccpp_cap,   only: cam_ccpp_physics_finalize
+      use cam_ccpp_cap,   only: ccpp_final
       use cam_abortutils, only: endrun
 
-      call cam_ccpp_physics_finalize(phys_suite_name)
+      call ccpp_final(phys_suite_name)
       if (errcode /= 0) then
-         call endrun('cam_ccpp_physics_finalize: '//trim(errmsg))
+         call endrun('ccpp_final: '//trim(errmsg))
       end if
       deallocate(suite_names)
       deallocate(suite_parts)

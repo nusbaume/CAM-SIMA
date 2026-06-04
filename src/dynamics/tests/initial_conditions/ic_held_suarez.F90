@@ -27,7 +27,7 @@ CONTAINS
     use shr_kind_mod,              only: cx => shr_kind_cx
     use ccpp_kinds,                only: kind_phys
     use ccpp_constituent_prop_mod, only: ccpp_constituent_prop_ptr_t
-    use cam_ccpp_cap,              only: cam_model_const_properties
+    use cam_ccpp_cap,              only: ccpp_model_const_properties
     use cam_constituents,          only: const_get_index, const_qmin
     use runtime_obj,               only: wv_stdname
 
@@ -146,7 +146,7 @@ CONTAINS
       call const_get_index(wv_stdname, ix_q)
 
       !Get constituent properties object:
-      const_props => cam_model_const_properties()
+      const_props => ccpp_model_const_properties()
 
       !Determine array sizes:
       nlev = size(Q, 2)

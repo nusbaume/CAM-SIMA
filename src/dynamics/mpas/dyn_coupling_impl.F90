@@ -33,7 +33,7 @@ contains
         use physics_types, only: phys_state
         use vert_coord, only: pver
         ! Module(s) from CCPP.
-        use cam_ccpp_cap, only: cam_advected_constituents_array
+        use cam_ccpp_cap, only: ccpp_advected_constituents_array
         use ccpp_kinds, only: kind_phys
         ! Module(s) from CESM Share.
         use shr_kind_mod, only: kind_r8 => shr_kind_r8, &
@@ -107,7 +107,7 @@ contains
             'sigma_all_q(pver)', &
             file='dyn_coupling', line=__LINE__, errmsg=trim(adjustl(cerr)))
 
-        constituents => cam_advected_constituents_array()
+        constituents => ccpp_advected_constituents_array()
 
         if (.not. associated(constituents)) then
             call endrun('Failed to find variable "constituents"', subname, __LINE__)
@@ -513,7 +513,7 @@ contains
             use string_utils, only: stringify
             use vert_coord, only: pver, pverp
             ! Module(s) from CCPP.
-            use cam_ccpp_cap, only: cam_constituents_array, cam_model_const_properties
+            use cam_ccpp_cap, only: ccpp_constituents_array, ccpp_model_const_properties
             use ccpp_constituent_prop_mod, only: ccpp_constituent_prop_ptr_t
             use ccpp_kinds, only: kind_phys
             use geopotential_temp, only: geopotential_temp_run
@@ -544,13 +544,13 @@ contains
                 minimum_constituents(i) = const_qmin(i)
             end do
 
-            constituents => cam_constituents_array()
+            constituents => ccpp_constituents_array()
 
             if (.not. associated(constituents)) then
                 call endrun('Failed to find variable "constituents"', subname, __LINE__)
             end if
 
-            constituent_properties => cam_model_const_properties()
+            constituent_properties => ccpp_model_const_properties()
 
             if (.not. associated(constituent_properties)) then
                 call endrun('Failed to find variable "constituent_properties"', subname, __LINE__)

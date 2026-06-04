@@ -96,8 +96,8 @@ CONTAINS
 !      use history_defaults,          only: initialize_iop_history
       use stepon,                    only: stepon_init
       use air_composition,           only: air_composition_init
-      use cam_ccpp_cap,              only: cam_ccpp_initialize_constituents
-      use cam_ccpp_cap,              only: cam_model_const_properties
+      use cam_ccpp_cap,              only: ccpp_initialize_constituents
+      use cam_ccpp_cap,              only: ccpp_model_const_properties
       use physics_grid,              only: columns_on_task
       use vert_coord,                only: pver
       use phys_vars_init_check,      only: mark_as_initialized
@@ -221,7 +221,7 @@ CONTAINS
       call model_grid_init()
 
       ! Initialize constituent data
-      call cam_ccpp_initialize_constituents(columns_on_task, pver, errflg, errmsg)
+      call ccpp_initialize_constituents(columns_on_task, pver, errflg, errmsg)
 
       ! Initialize ghg surface values before default initial distributions
       ! are set in dyn_init
@@ -262,7 +262,7 @@ CONTAINS
       !
       ! Remove this when MUSICA input data are available from CAM-SIMA or
       ! other physics schemes.
-      constituent_properties => cam_model_const_properties()
+      constituent_properties => ccpp_model_const_properties()
       call musica_ccpp_dependencies_init(columns_on_task, pver, &
            constituent_properties, phys_suite_name)
 
@@ -299,8 +299,8 @@ CONTAINS
       use orbital_data,              only: orbital_data_advance
       use stepon,                    only: stepon_timestep_init
       use physics_types,             only: dt_avg
-      use cam_ccpp_cap,              only: cam_constituents_array
-      use cam_ccpp_cap,              only: cam_model_const_properties
+      use cam_ccpp_cap,              only: ccpp_constituents_array
+      use cam_ccpp_cap,              only: ccpp_model_const_properties
       use ccpp_constituent_prop_mod, only: ccpp_constituent_prop_ptr_t
       use ccpp_kinds,                only: kind_phys
       use musica_ccpp_dependencies,  only: set_initial_musica_concentrations
@@ -340,8 +340,8 @@ CONTAINS
       !            by CAM-SIMA.
       !----------------------------------------------------------
       if (is_first_timestep) then
-         constituents_array => cam_constituents_array()
-         constituent_properties => cam_model_const_properties()
+         constituents_array => ccpp_constituents_array()
+         constituent_properties => ccpp_model_const_properties()
          call set_initial_musica_concentrations(constituents_array, &
               constituent_properties)
       end if
@@ -611,10 +611,10 @@ CONTAINS
       use cam_constituents,          only: const_set_qmin, const_get_index
       use ccpp_kinds,                only: kind_phys
       use ccpp_constituent_prop_mod, only: ccpp_constituent_prop_ptr_t
-      use cam_ccpp_cap,              only: cam_ccpp_register_constituents
-      use cam_ccpp_cap,              only: cam_ccpp_number_constituents
-      use cam_ccpp_cap,              only: cam_model_const_properties
-      use cam_ccpp_cap,              only: cam_ccpp_is_scheme_constituent
+      use cam_ccpp_cap,              only: ccpp_register_constituents
+      use cam_ccpp_cap,              only: ccpp_number_constituents
+      use cam_ccpp_cap,              only: ccpp_model_const_properties
+      use cam_ccpp_cap,              only: ccpp_is_scheme_constituent
 
       ! Dummy arguments
       type(runtime_options), intent(in) :: cam_runtime_opts
@@ -633,7 +633,7 @@ CONTAINS
 
       ! Check if water vapor is already marked as a constituent by the
       ! physics:
-      call cam_ccpp_is_scheme_constituent(wv_stdname, is_constituent, errflg, errmsg)
+      call ccpp_is_scheme_constituent(wv_stdname, is_constituent, errflg, errmsg)
 
       if (errflg /= 0) then
          call endrun(subname//trim(errmsg), file=__FILE__, line=__LINE__)
@@ -674,7 +674,7 @@ CONTAINS
 
       !Combine host and physics constituents into a single
       !constituents object:
-      call cam_ccpp_register_constituents(             &
+      call ccpp_register_constituents(             &
            host_constituents, errcode=errflg, errmsg=errmsg)
 
       if (errflg /= 0) then
@@ -682,7 +682,7 @@ CONTAINS
       end if
 
       !Determine total number of advected constituents:
-      call cam_ccpp_number_constituents(num_advect, advected=.true.,                    &
+      call ccpp_number_constituents(num_advect, advected=.true.,                    &
            errcode=errflg, errmsg=errmsg)
 
       if (errflg /= 0) then
@@ -690,7 +690,7 @@ CONTAINS
       end if
 
       ! Grab a pointer to the constituent array
-      const_props => cam_model_const_properties()
+      const_props => ccpp_model_const_properties()
 
       ! Initialize the constituents module
       call cam_constituents_init(const_props, num_advect)

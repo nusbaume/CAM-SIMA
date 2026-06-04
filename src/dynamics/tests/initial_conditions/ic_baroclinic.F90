@@ -79,7 +79,7 @@ contains
     use dyn_tests_utils,           only: vc_moist_pressure, vc_dry_pressure, vc_height
     use runtime_obj,               only: wv_stdname
     use ccpp_constituent_prop_mod, only: ccpp_constituent_prop_ptr_t
-    use cam_ccpp_cap,              only: cam_model_const_properties
+    use cam_ccpp_cap,              only: ccpp_model_const_properties
     use ccpp_kinds,                only: kind_phys
     use cam_constituents,          only: const_get_index, const_qmin
     use inic_analytic_utils,       only: analytic_ic_is_moist
@@ -376,7 +376,7 @@ contains
     if (lq) then
 
       !Get constituent properties object:
-      const_props => cam_model_const_properties()
+      const_props => ccpp_model_const_properties()
 
       do m = 1, size(m_cnst)
 

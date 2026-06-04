@@ -57,7 +57,7 @@ subroutine d_p_coupling(cam_runtime_opts, phys_state, phys_tend, dyn_out)
    use hycoef,                    only: hyai, ps0
    use test_fvm_mapping,          only: test_mapping_overwrite_dyn_state, test_mapping_output_phys_state
    use ccpp_constituent_prop_mod, only: ccpp_constituent_prop_ptr_t
-   use cam_ccpp_cap,              only: cam_constituents_array
+   use cam_ccpp_cap,              only: ccpp_constituents_array
    use cam_constituents,          only: const_name
 
    !SE dycore:
@@ -130,7 +130,7 @@ subroutine d_p_coupling(cam_runtime_opts, phys_state, phys_tend, dyn_out)
      nphys = np
    end if
 
-   const_data_ptr => cam_constituents_array()
+   const_data_ptr => ccpp_constituents_array()
 
    ! Allocate temporary arrays to hold data for physics decomposition
    allocate(ps_tmp(nphys_pts,nelemd), stat=ierr, errmsg=errmsg)
@@ -320,7 +320,7 @@ subroutine p_d_coupling(cam_runtime_opts, phys_state, phys_tend, dyn_in, tl_f, t
    ! Convert the physics output state into the dynamics input state.
    use test_fvm_mapping, only: test_mapping_overwrite_tendencies
    use test_fvm_mapping, only: test_mapping_output_mapped_tendencies
-   use cam_ccpp_cap,     only: cam_constituents_array
+   use cam_ccpp_cap,     only: ccpp_constituents_array
    use cam_constituents, only: num_advected
    use cam_constituents, only: const_is_water_species
 
@@ -391,7 +391,7 @@ subroutine p_d_coupling(cam_runtime_opts, phys_state, phys_tend, dyn_in, tl_f, t
    dq_tmp = 0.0_r8
 
    !Grab pointer to constituent array
-   const_data_ptr => cam_constituents_array()
+   const_data_ptr => ccpp_constituents_array()
 
    !Convert wet mixing ratios to dry, which for CAM
    !configurations is only the water species:
@@ -573,8 +573,8 @@ subroutine derived_phys_dry(cam_runtime_opts, phys_state, phys_tend)
    ! Finally compute energy and water column integrals of the physics input state.
 
    use ccpp_constituent_prop_mod, only: ccpp_constituent_prop_ptr_t
-   use cam_ccpp_cap,      only: cam_constituents_array
-   use cam_ccpp_cap,      only: cam_model_const_properties
+   use cam_ccpp_cap,      only: ccpp_constituents_array
+   use cam_ccpp_cap,      only: ccpp_model_const_properties
    use cam_constituents,  only: num_advected
    use cam_constituents,  only: const_is_water_species
    use cam_constituents,  only: const_get_index
@@ -637,14 +637,14 @@ subroutine derived_phys_dry(cam_runtime_opts, phys_state, phys_tend)
    call const_get_index(wv_stdname, ix_q)
 
    ! Grab pointer to constituent and properties arrays
-   const_data_ptr => cam_constituents_array()
-   const_prop_ptr => cam_model_const_properties()
+   const_data_ptr => ccpp_constituents_array()
+   const_prop_ptr => ccpp_model_const_properties()
 
    ! Create qmin array (if not already generated):
    if (.not.allocated(qmin_vals)) then
      allocate(qmin_vals(size(const_prop_ptr)), stat=errflg)
      call check_allocate(errflg, subname, &
-                         'qmin_vals(size(cam_model_const_properties))', &
+                         'qmin_vals(size(ccpp_model_const_properties))', &
                          file=__FILE__, line=__LINE__)
 
 

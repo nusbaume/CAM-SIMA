@@ -30,7 +30,7 @@ subroutine us_std_atm_set_ic(latvals, lonvals, zint, U, V, T, PS, PHIS_IN, &
    use cam_abortutils,            only: endrun, check_allocate
    use runtime_obj,               only: wv_stdname
    use ccpp_constituent_prop_mod, only: ccpp_constituent_prop_ptr_t
-   use cam_ccpp_cap,              only: cam_model_const_properties
+   use cam_ccpp_cap,              only: ccpp_model_const_properties
    use cam_constituents,          only: const_get_index, const_qmin
 
    !----------------------------------------------------------------------------
@@ -226,7 +226,7 @@ subroutine us_std_atm_set_ic(latvals, lonvals, zint, U, V, T, PS, PHIS_IN, &
       ncnst = size(m_cnst)
 
       !Extract constituent properties from CCPP constituents object:
-      const_props => cam_model_const_properties()
+      const_props => ccpp_model_const_properties()
 
       do m = 1, ncnst
          if (m_cnst(m) == m_cnst_ix_q) then
