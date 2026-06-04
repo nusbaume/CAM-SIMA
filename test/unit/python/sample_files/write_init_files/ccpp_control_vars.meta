@@ -9,7 +9,7 @@
 # uses the local_name in each [ name ] block as the dummy argument
 # name in the generated public-entry-point signatures.
 #
-# Every host must declare these eight standard names in a control
+# Every host must declare these nine standard names in a control
 # table.  Capgen-ng's _validate_required_control_vars enforces the
 # list.
 ########################################################################
@@ -24,6 +24,13 @@
 [ suite_name ]
   standard_name = suite_name
   long_name = name of the CCPP suite to dispatch to
+  units = none
+  dimensions = ()
+  type = character
+  kind = len=256
+[ group_name ]
+  standard_name = group_name
+  long_name = name of the CCPP group to dispatch to
   units = none
   dimensions = ()
   type = character
