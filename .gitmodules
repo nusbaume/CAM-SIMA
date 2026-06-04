@@ -1,9 +1,9 @@
 [submodule "ccpp-framework"]
-	path = ccpp_framework
-        url           = https://github.com/climbfuji/ccpp-framework
-        fxtag         = d9877eb8bb36f642756ae3c5ef237b323cb7747a
-        fxrequired    = AlwaysRequired
-	fxDONOTUSEurl = https://github.com/NCAR/ccpp-framework
+    path = ccpp_framework
+    url           = https://github.com/climbfuji/ccpp-framework
+    fxtag         = 7a3263e729a231398dfbc323e43596abf2d032ec
+    fxrequired    = AlwaysRequired
+    fxDONOTUSEurl = https://github.com/NCAR/ccpp-framework
 [submodule "history"]
 	path          = src/history/buffers
 	url           = https://github.com/ESMCI/history_output
@@ -20,7 +20,7 @@
 [submodule "ncar-physics"]
         path          = src/physics/ncar_ccpp
 	url           = https://github.com/climbfuji/atmospheric_physics
-	fxtag         = 84b8c39ed70338db8bfdf3caade83175e6b9191f
+	fxtag         = 0f7913f4a0c7e802023bfe5efe96cfb6df8e7a15
         fxrequired    = AlwaysRequired
         fxDONOTUSEurl = https://github.com/ESCOMP/atmospheric_physics
 [submodule "rrtmgp-data"]
