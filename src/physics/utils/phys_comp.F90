@@ -3,7 +3,6 @@ module phys_comp
    use ccpp_kinds,    only: kind_phys
    use shr_kind_mod,  only: SHR_KIND_CS, SHR_KIND_CL
    use runtime_obj,   only: unset_str
-   use physics_types, only: errmsg, errcode
    use physics_grid,  only: col_start, col_end
 
    implicit none
@@ -36,6 +35,9 @@ module phys_comp
    character(len=SHR_KIND_CS)              :: cam_take_snapshot_after = unset_str
    real(kind_phys)                         :: min_difference = HUGE(1.0_kind_phys)
    real(kind_phys)                         :: min_relative_value = HUGE(1.0_kind_phys)
+
+   character(len=512) :: errmsg
+   integer :: errcode
 
 !==============================================================================
 CONTAINS
@@ -165,7 +167,7 @@ CONTAINS
          end if
       end do
       ! Call CCPP register phase
-      call ccpp_register(phys_suite_name)
+      call ccpp_register(suite_name=phys_suite_name, errcode=errcode)
       if (errcode /= 0) then
          call endrun('ccpp_register: '//trim(errmsg))
       end if
@@ -188,11 +190,18 @@ CONTAINS
       call allocate_physics_types_fields(set_init_val_in=.true., reallocate_in=.false.)
 
       !Run CCPP "init" phase:
-      call ccpp_init(phys_suite_name)
+      call ccpp_init(suite_name=phys_suite_name, errcode=errcode)
       if (errcode /= 0) then
          call endrun('ccpp_init: '//trim(errmsg))
       end if
 
+      call ccpp_physics_init(suite_name=phys_suite_name, &
+            group_name='all', col_start=1, col_end=columns_on_task, &
+            thread_num=1, nthreads=1, nphys_threads=1, &
+            errmsg=errmsg, errcode=errcode)
+      if (errcode /= 0) then
+         call endrun('ccpp_physics_init: '//trim(errmsg))
+      end if
    end subroutine phys_init
 
    subroutine phys_timestep_init()
