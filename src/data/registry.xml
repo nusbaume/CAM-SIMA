@@ -364,7 +364,8 @@
       <dimensions>horizontal_dimension</dimensions>
       <initial_value>0.0</initial_value>
     </variable>
-    <variable local_name="dycore_energy_consistency_adjust"
+    <!-- Renamed from dycore_energy_consistency_adjust to avoid name collision with scheme module name -->
+    <variable local_name="do_dycore_energy_consistency_adjust"
               standard_name="flag_for_dycore_energy_consistency_adjustment"
               units="flag" type="logical">
       <long_name>flag indicating if dynamical core energy is not consistent with CAM physics and to perform adjustment of temperature and temperature tendency</long_name>

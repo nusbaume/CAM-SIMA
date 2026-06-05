@@ -567,7 +567,7 @@ subroutine dyn_init(cam_runtime_opts, dyn_in, dyn_out)
    !use cam_history,        only: addfld, add_default, horiz_only, register_vector_field
    use gravity_waves_sources, only: gws_init
    use cam_thermo_formula, only: energy_formula_dycore, ENERGY_FORMULA_DYCORE_SE
-   use physics_types,      only: dycore_energy_consistency_adjust
+   use physics_types,      only: do_dycore_energy_consistency_adjust
    use phys_vars_init_check, only: mark_as_initialized
 
    !SE dycore:
@@ -651,7 +651,7 @@ subroutine dyn_init(cam_runtime_opts, dyn_in, dyn_out)
 
    ! Dynamical core energy is not consistent with CAM physics and requires
    ! temperature and temperature tendency adjustment at end of physics.
-   dycore_energy_consistency_adjust = .true.
+   do_dycore_energy_consistency_adjust = .true.
    call mark_as_initialized("flag_for_dycore_energy_consistency_adjustment")
 
    ! Set name of dycore in runtime object

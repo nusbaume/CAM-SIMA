@@ -356,7 +356,7 @@ contains
         ! Module(s) from CAM-SIMA.
         use cam_logfile, only: debugout_debug
         use cam_thermo_formula, only: energy_formula_dycore, energy_formula_dycore_mpas
-        use physics_types, only: dycore_energy_consistency_adjust
+        use physics_types, only: do_dycore_energy_consistency_adjust
 
         character(*), parameter :: subname = 'dyn_comp::set_thermodynamic_energy_formula'
 
@@ -368,7 +368,7 @@ contains
         ! The total energy of dynamical core, which uses "MPAS formula" as set above, is not consistent with
         ! that of CAM physics, which uses "FV formula". Therefore, temperature and temperature tendency adjustments
         ! are needed at the end of each physics time step.
-        dycore_energy_consistency_adjust = .true.
+        do_dycore_energy_consistency_adjust = .true.
 
         call dyn_debug_print(debugout_debug, subname // ' completed')
     end subroutine set_thermodynamic_energy_formula
