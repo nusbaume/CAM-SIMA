@@ -235,13 +235,37 @@ class _VarWrapper:
         }
         ptype = ptype_map.get(arg.source, 'API')
         source = _Source(ptype=ptype, name=arg.module_name)
+        # write_init_files keys constituent handling -- skip USE-import and
+        # skip the initial-conditions read; the constituents object supplies
+        # the value at runtime -- on the call-list var's ``advected`` /
+        # ``constituent`` property.  Capgen-ng tags EVERY framework-provided
+        # constituent arg with ``source == 'constituent'``: base species
+        # (vars_layer), constituent tendencies (vars_layer_tend), the
+        # framework arrays/counts, ``index_of_*`` integers, and the
+        # register-phase ccpp_constituent_properties_t arg.  The per-arg
+        # ``is_constituent`` / ``is_constituent_arg`` flags are a strict
+        # SUBSET: they are set only when the SCHEME ITSELF flagged the arg
+        # (advected / constituent / molar_mass) or it is the register array.
+        # An *inferred* consumer -- e.g. a sima_diagnostics scheme reading
+        # ``tendency_of_<X>`` (intent=in) without re-flagging it (rule b) --
+        # resolves to ``source == 'constituent'`` yet carries
+        # ``is_constituent == False``, because whether a standard name is a
+        # constituent is the host's decision, not the consumer's.  Keying on
+        # the source (not the consumer's own flag) closes that gap so the arg
+        # is routed through the constituents object instead of being
+        # mis-flagged as a missing required host variable.
+        is_constituent = (
+            arg.source == 'constituent'
+            or bool(arg.is_constituent)
+            or bool(arg.is_constituent_arg)
+        )
         return cls(
             standard_name      = arg.standard_name,
             local_name         = arg.scheme_local_name,
             intent             = arg.intent,
             protected          = False,
-            advected           = bool(arg.is_constituent) or bool(arg.is_constituent_arg),
-            constituent        = bool(arg.is_constituent) or bool(arg.is_constituent_arg),
+            advected           = is_constituent,
+            constituent        = is_constituent,
             dimensions         = list(arg.scheme_dimensions),
             source             = source,
             call_expr          = arg.call_expr,
