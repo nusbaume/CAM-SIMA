@@ -1,15 +1,15 @@
 [submodule "ccpp-framework"]
-    path = ccpp_framework
-    url           = https://github.com/climbfuji/ccpp-framework
-    fxtag         = b576b357f49b8ff538ae530a3384e61f54499c5a
-    fxrequired    = AlwaysRequired
-    fxDONOTUSEurl = https://github.com/NCAR/ccpp-framework
+        path = ccpp_framework
+        url           = https://github.com/climbfuji/ccpp-framework
+        fxtag         = a1d9a007abe40bab7b241e441fd9bc0145911718
+        fxrequired    = AlwaysRequired
+        fxDONOTUSEurl = https://github.com/NCAR/ccpp-framework
 [submodule "history"]
-	path          = src/history/buffers
-	url           = https://github.com/ESMCI/history_output
-	fxtag         = history01_01
-	fxrequired    = AlwaysRequired
-	fxDONOTUSEurl = https://github.com/ESMCI/history_output
+        path          = src/history/buffers
+        url           = https://github.com/ESMCI/history_output
+        fxtag         = history01_01
+        fxrequired    = AlwaysRequired
+        fxDONOTUSEurl = https://github.com/ESMCI/history_output
 [submodule "mpas"]
         path          = src/dynamics/mpas/dycore
         url           = https://github.com/MPAS-Dev/MPAS-Model.git
@@ -19,13 +19,13 @@
         fxDONOTUSEurl = https://github.com/MPAS-Dev/MPAS-Model.git
 [submodule "ncar-physics"]
         path          = src/physics/ncar_ccpp
-	url           = https://github.com/climbfuji/atmospheric_physics
-	fxtag         = ffa25156221798883384ac1e10c85f335b50c6f2
+        url           = https://github.com/climbfuji/atmospheric_physics
+        fxtag         = 92a7290261420a345d486f12f185e672bb3eda03
         fxrequired    = AlwaysRequired
         fxDONOTUSEurl = https://github.com/ESCOMP/atmospheric_physics
 [submodule "rrtmgp-data"]
-	path          = src/physics/utils/rrtmgp-data
-	url           = https://github.com/earth-system-radiation/rrtmgp-data.git
+        path          = src/physics/utils/rrtmgp-data
+        url           = https://github.com/earth-system-radiation/rrtmgp-data.git
         fxrequired    = AlwaysRequired
         fxtag         = v1.8
         fxDONOTUSEurl = https://github.com/earth-system-radiation/rrtmgp-data.git
@@ -52,7 +52,7 @@
         url           = https://github.com/ESMCI/cime
         fxtag         = cime6.1.145
         fxrequired    = ToplevelRequired
-	fxDONOTUSEurl = https://github.com/ESMCI/cime
+        fxDONOTUSEurl = https://github.com/ESMCI/cime
 [submodule "clm"]
         path          = components/clm
         url           = https://github.com/ESCOMP/CTSM
@@ -64,13 +64,13 @@
         url           = https://github.com/ESCOMP/CMEPS.git
         fxtag         = cmeps1.1.24
         fxrequired    = ToplevelRequired
-	fxDONOTUSEurl = https://github.com/ESCOMP/CMEPS.git
+        fxDONOTUSEurl = https://github.com/ESCOMP/CMEPS.git
 [submodule "fms"]
         path          = libraries/FMS
         url           = https://github.com/ESCOMP/FMS_interface
         fxtag         = fi_250428
         fxrequired    = ToplevelRequired
-	fxDONOTUSEurl = https://github.com/ESCOMP/FMS_interface
+        fxDONOTUSEurl = https://github.com/ESCOMP/FMS_interface
 [submodule "mizuRoute"]
         path          = components/mizuRoute
         url           = https://github.com/ESCOMP/mizuRoute
@@ -88,7 +88,7 @@
         url           = https://github.com/NCAR/ParallelIO
         fxtag         = pio2_6_6
         fxrequired    = ToplevelRequired
-	fxDONOTUSEurl = https://github.com/NCAR/ParallelIO
+        fxDONOTUSEurl = https://github.com/NCAR/ParallelIO
 [submodule "rtm"]
         path          = components/rtm
         url           = https://github.com/ESCOMP/RTM
@@ -100,10 +100,10 @@
         url           = https://github.com/ESCOMP/CESM_share
         fxtag         = share1.1.16
         fxrequired    = ToplevelRequired
-	fxDONOTUSEurl = https://github.com/ESCOMP/CESM_share
+        fxDONOTUSEurl = https://github.com/ESCOMP/CESM_share
 [submodule "tools/CUPiD"]
-	path          = tools/CUPiD
-	url           = https://github.com/NCAR/CUPiD.git
-	fxtag         = v0.4.0
-	fxrequired    = ToplevelRequired
-	fxDONOTUSEurl = https://github.com/NCAR/CUPiD.git
+        path          = tools/CUPiD
+        url           = https://github.com/NCAR/CUPiD.git
+        fxtag         = v0.4.0
+        fxrequired    = ToplevelRequired
+        fxDONOTUSEurl = https://github.com/NCAR/CUPiD.git
