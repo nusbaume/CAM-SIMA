@@ -1,7 +1,7 @@
 [submodule "ccpp-framework"]
         path = ccpp_framework
         url           = https://github.com/climbfuji/ccpp-framework
-        fxtag         = cda7b9a4b4846a4a161883dc1b59c9e6c960201f
+        fxtag         = e2e25f5a5470685445ee9a8b3b910fe9f257658a
         fxrequired    = AlwaysRequired
         fxDONOTUSEurl = https://github.com/NCAR/ccpp-framework
 [submodule "history"]
@@ -20,7 +20,7 @@
 [submodule "ncar-physics"]
         path          = src/physics/ncar_ccpp
         url           = https://github.com/climbfuji/atmospheric_physics
-        fxtag         = c3a27c4e777dab18dfe321868a64b6daf49f5980
+        fxtag         = dc2b863062ca184cd9ca951320d297f605a1316a
         fxrequired    = AlwaysRequired
         fxDONOTUSEurl = https://github.com/ESCOMP/atmospheric_physics
 [submodule "rrtmgp-data"]
