@@ -49,18 +49,6 @@
   units = index
   dimensions = ()
   type = integer
-[ thread_num ]
-  standard_name = thread_number
-  long_name = current OpenMP thread number (1 if single-threaded)
-  units = 1
-  dimensions = ()
-  type = integer
-[ nthreads ]
-  standard_name = number_of_threads
-  long_name = total number of OpenMP threads (1 if single-threaded)
-  units = 1
-  dimensions = ()
-  type = integer
 [ nphys_threads ]
   standard_name = number_of_physics_threads
   long_name = physics-internal thread budget (1 if unused)

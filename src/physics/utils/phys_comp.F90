@@ -197,8 +197,7 @@ CONTAINS
 
       call ccpp_physics_init(suite_name=phys_suite_name, &
             group_name='all', col_start=1, col_end=columns_on_task, &
-            thread_num=1, nthreads=1, nphys_threads=1, &
-            errmsg=errmsg, errcode=errcode)
+            nphys_threads=1, errmsg=errmsg, errcode=errcode)
       if (errcode /= 0) then
          call endrun('ccpp_physics_init: '//trim(errmsg))
       end if
@@ -256,8 +255,7 @@ CONTAINS
       ! Initialize the physics time step
       call ccpp_physics_timestep_init(suite_name=phys_suite_name, &
             group_name='all', col_start=1, col_end=columns_on_task, &
-            thread_num=1, nthreads=1, nphys_threads=1, &
-            errmsg=errmsg, errcode=errcode)
+            nphys_threads=1, errmsg=errmsg, errcode=errcode)
       if (errcode /= 0) then
          call endrun('ccpp_physics_timestep_init: '//trim(errmsg))
       end if
@@ -273,8 +271,7 @@ CONTAINS
          call ccpp_physics_run(suite_name=phys_suite_name, &
             group_name='physics_before_coupler', &
             col_start=1, col_end=columns_on_task, &
-            thread_num=1, nthreads=1, nphys_threads=1, &
-            errmsg=errmsg, errcode=errcode)
+            nphys_threads=1, errmsg=errmsg, errcode=errcode)
          if (errcode /= 0) then
             call endrun('ccpp_physics_run: '//trim(errmsg))
          end if
@@ -291,8 +288,7 @@ CONTAINS
          call ccpp_physics_run(suite_name=phys_suite_name, &
             group_name='physics_after_coupler', &
             col_start=1, col_end=columns_on_task, &
-            thread_num=1, nthreads=1, nphys_threads=1, &
-            errmsg=errmsg, errcode=errcode)
+            nphys_threads=1, errmsg=errmsg, errcode=errcode)
          if (errcode /= 0) then
             call endrun('ccpp_physics_run: '//trim(errmsg))
          end if
@@ -316,8 +312,7 @@ CONTAINS
       ! Finalize the time step
       call ccpp_physics_timestep_final(suite_name=phys_suite_name, &
             group_name='all', col_start=1, col_end=columns_on_task, &
-            thread_num=1, nthreads=1, nphys_threads=1, &
-            errmsg=errmsg, errcode=errcode)
+            nphys_threads=1, errmsg=errmsg, errcode=errcode)
       if (errcode /= 0) then
          call endrun('ccpp_physics_timestep_final: '//trim(errmsg))
       end if
