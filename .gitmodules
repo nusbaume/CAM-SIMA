@@ -20,7 +20,7 @@
 [submodule "ncar-physics"]
         path          = src/physics/ncar_ccpp
         url           = https://github.com/climbfuji/atmospheric_physics
-        fxtag         = ef792f9ed3b17db5309d4bf75d034897f93de854
+        fxtag         = 2ea83b47f75e6bc9485739b3c3328f053e199657
         fxrequired    = AlwaysRequired
         fxDONOTUSEurl = https://github.com/ESCOMP/atmospheric_physics
 [submodule "rrtmgp-data"]
