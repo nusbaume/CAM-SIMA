@@ -24,22 +24,22 @@ import glob
 _CIME_CONFIG_DIR = os.path.dirname(os.path.abspath(__file__))
 _CAM_ROOT_DIR = os.path.dirname(_CIME_CONFIG_DIR)
 _REG_GEN_DIR = os.path.abspath(os.path.join(_CAM_ROOT_DIR, "src", "data"))
-# capgen-ng compatibility layer: holds the flat ``ccpp_capgen`` /
+# capgen compatibility layer: holds the flat ``ccpp_capgen`` /
 # ``parse_tools`` / ``metadata_table`` / ``framework_env`` /
 # ``ccpp_state_machine`` / ``fortran_tools`` shims that adapt
-# capgen-ng to CAM-SIMA's original-capgen import surface.  See
+# capgen to CAM-SIMA's original-capgen import surface.  See
 # cime_config/capgen_compat/README.md for the contract and removal
 # procedure.
 _CCPP_FRAMEWORK_DIR = os.path.join(_CIME_CONFIG_DIR, "capgen_compat")
-# capgen-ng itself (the canonical CCPP code generator) lives under
-# ccpp_framework/capgen-ng as a fleximod-pinned external.  The compat
-# shims import ``ccpp_capgen_ng`` and ``metadata.parse_tools`` from
+# capgen itself (the canonical CCPP code generator) lives under
+# ccpp_framework/capgen as a fleximod-pinned external.  The compat
+# shims import ``ccpp_capgen`` and ``metadata.parse_tools`` from
 # here.
-_CCPP_CAPGEN_NG_DIR = os.path.join(_CAM_ROOT_DIR, "ccpp_framework",
-                                   "capgen-ng")
+_CCPP_CAPGEN_DIR = os.path.join(_CAM_ROOT_DIR, "ccpp_framework",
+                                "capgen")
 # Add CCPP-framework paths to python path:
 sys.path.append(_CCPP_FRAMEWORK_DIR)
-sys.path.append(_CCPP_CAPGEN_NG_DIR)
+sys.path.append(_CCPP_CAPGEN_DIR)
 # Add registry generator path to python path:
 sys.path.append(_REG_GEN_DIR)
 
@@ -74,7 +74,7 @@ except ImportError as ierr:
 #pylint: enable=wrong-import-position
 # Cleanup python path
 sys.path.remove(_CCPP_FRAMEWORK_DIR)
-sys.path.remove(_CCPP_CAPGEN_NG_DIR)
+sys.path.remove(_CCPP_CAPGEN_DIR)
 sys.path.remove(_REG_GEN_DIR)
 
 # Acquire python logger:
@@ -582,7 +582,7 @@ def generate_physics_suites(build_cache, preproc_defs, host_name,
 
     # Required CCPP control variables (suite_name, horizontal_loop_*,
     # thread_number, number_of_threads, number_of_physics_threads,
-    # ccpp_error_code, ccpp_error_message).  Capgen-ng requires these
+    # ccpp_error_code, ccpp_error_message).  Capgen requires these
     # in a type = control table; no Fortran backs them (the host driver
     # supplies the values as args to ccpp_physics_*).
     _control_vars_meta = os.path.join(

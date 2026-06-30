@@ -4,7 +4,7 @@ Original capgen's ``ccpp_state_machine`` carries a full ``StateMachine``
 implementation; the only piece ``write_init_files.py`` actually needs
 is ``.transitions()`` returning the per-phase identifier list.
 
-Phase names match capgen-ng's:
+Phase names match capgen's:
 
     register, init, timestep_init, run, timestep_final, final
 

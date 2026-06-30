@@ -22,10 +22,10 @@ import unittest
 __TEST_DIR = os.path.dirname(os.path.abspath(__file__))
 _CAM_ROOT = os.path.abspath(os.path.join(__TEST_DIR, os.pardir, os.pardir, os.pardir))
 __CIME_CONFIG_DIR = os.path.join(_CAM_ROOT, "cime_config")
-# capgen-ng compatibility layer (flat-module shims + adapter):
+# capgen compatibility layer (flat-module shims + adapter):
 __COMPAT_DIR = os.path.join(__CIME_CONFIG_DIR, "capgen_compat")
-# capgen-ng itself (the canonical CCPP code generator):
-__CCPP_DIR = os.path.join(_CAM_ROOT, "ccpp_framework", "capgen-ng")
+# capgen itself (the canonical CCPP code generator):
+__CCPP_DIR = os.path.join(_CAM_ROOT, "ccpp_framework", "capgen")
 _SAMPLE_FILES_DIR = os.path.join(__TEST_DIR,
                                  "sample_files", "hist_config_files")
 _TMP_DIR = os.path.join(__TEST_DIR, "tmp")
@@ -45,9 +45,9 @@ if not os.path.exists(__CCPP_DIR):
 if not os.path.exists(_SAMPLE_FILES_DIR):
     raise ImportError(f"Cannot find '{_SAMPLE_FILES_DIR}'")
 
-# Add capgen-ng compat layer FIRST so the flat-module shims win.
+# Add capgen compat layer FIRST so the flat-module shims win.
 sys.path.insert(0, __COMPAT_DIR)
-# Add capgen-ng itself so the compat shims' internal imports resolve.
+# Add capgen itself so the compat shims' internal imports resolve.
 sys.path.append(__CCPP_DIR)
 sys.path.append(__CIME_CONFIG_DIR)
 

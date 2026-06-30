@@ -1,5 +1,5 @@
 """``CapDatabase`` facade -- host_model_dict + call_list(phase) on top
-of capgen-ng's flat host_dict and per-(scheme, phase) ResolvedCall map.
+of capgen's flat host_dict and per-(scheme, phase) ResolvedCall map.
 """
 
 from collections import OrderedDict
@@ -8,7 +8,7 @@ from typing import Dict, List, Optional, Set
 from _var_wrapper import _VarWrapper
 
 
-# Map original-capgen phase names → capgen-ng phase keys.  capgen-ng
+# Map original-capgen phase names → capgen phase keys.  capgen
 # uses ``init`` / ``final`` / ``timestep_init``; original capgen uses
 # ``initialize`` / ``finalize`` / ``timestep_initial``.  Accept either
 # spelling so CAM-SIMA can keep its phase iteration unchanged.
@@ -16,7 +16,7 @@ _PHASE_ALIAS = {
     'initialize':       'init',
     'finalize':         'final',
     'timestep_initial': 'timestep_init',
-    # Identity entries for capgen-ng's canonical names.
+    # Identity entries for capgen's canonical names.
     'register':         'register',
     'init':             'init',
     'timestep_init':    'timestep_init',
@@ -42,7 +42,7 @@ class _HostDict:
     def find_variable(self, stdname: str) -> Optional[_VarWrapper]:
         """Return a wrapper for *stdname*, or ``None``.
 
-        Case-insensitive (capgen-ng stores std_names lowercased).
+        Case-insensitive (capgen stores std_names lowercased).
         """
         if stdname is None:
             return None
@@ -77,7 +77,7 @@ _EMPTY_CALL_LIST = _CallList([])
 def _walk_calls(items):
     """Yield every leaf scheme call in *items*, recursing into subcycles.
 
-    Duck-typed (no isinstance checks against capgen-ng resolver classes)
+    Duck-typed (no isinstance checks against capgen resolver classes)
     so adapter tests can drive the facade with stub objects that carry
     just ``.args`` / ``.calls`` -- the two attributes the aggregator
     reads.
@@ -92,7 +92,7 @@ def _walk_calls(items):
 class CapDatabase:
     """Original-capgen-style ``cap_database`` facade.
 
-    Built by :func:`_runner.capgen` from capgen-ng's flat ``host_dict``
+    Built by :func:`_runner.capgen` from capgen's flat ``host_dict``
     plus an iterable of ``SuiteResolution`` objects (one per suite).
     Aggregates per-phase ResolvedArg lists across every suite and
     exposes them through :meth:`call_list`.
@@ -118,10 +118,10 @@ class CapDatabase:
 
         self._per_phase = per_phase
 
-    # ResolvedArg.source values capgen-ng emits.  Original capgen's
+    # ResolvedArg.source values capgen emits.  Original capgen's
     # ``call_list(phase).variable_list()`` contract is *host-facing*:
     # every entry must be lookup-able in the host_dict (or, for
-    # is_const-tagged args, in the constituent system).  Capgen-ng's
+    # is_const-tagged args, in the constituent system).  Capgen's
     # resolver explicitly carves out a third category --
     # ``source='suite'`` -- for vars produced by one scheme and
     # consumed by another within the same suite (suite_data).  Those
@@ -150,7 +150,7 @@ class CapDatabase:
     def call_list(self, phase: str) -> _CallList:
         """Return the per-phase call list.
 
-        Accepts capgen-ng phase names (``init`` / ``final``) and
+        Accepts capgen phase names (``init`` / ``final``) and
         original-capgen names (``initialize`` / ``finalize``).
         Unknown phases return an empty call list rather than raising
         -- write_init_files iterates every phase and would otherwise

@@ -23,7 +23,7 @@
   dimensions = ()
   type = integer
   protected = True
-# Framework-managed constituent count.  capgen-ng's resolver needs to
+# Framework-managed constituent count.  capgen's resolver needs to
 # find this standard name when a host variable carries
 # ``number_of_ccpp_constituents`` as a dimension (e.g. constituent
 # tendency arrays).  Production CAM-SIMA exposes it from

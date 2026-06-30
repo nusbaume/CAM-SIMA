@@ -21,10 +21,10 @@ import logging
 
 __TEST_DIR = os.path.dirname(os.path.abspath(__file__))
 _CAM_ROOT = os.path.abspath(os.path.join(__TEST_DIR, os.pardir, os.pardir, os.pardir))
-# capgen-ng compatibility layer (flat-module shims + adapter):
+# capgen compatibility layer (flat-module shims + adapter):
 __COMPAT_DIR = os.path.join(_CAM_ROOT, "cime_config", "capgen_compat")
-# capgen-ng itself (the canonical code generator):
-__CCPP_DIR = os.path.join(_CAM_ROOT, "ccpp_framework", "capgen-ng")
+# capgen itself (the canonical code generator):
+__CCPP_DIR = os.path.join(_CAM_ROOT, "ccpp_framework", "capgen")
 __REGISTRY_DIR = os.path.join(_CAM_ROOT, "src", "data")
 _REG_SAMPLES_DIR = os.path.join(__TEST_DIR, "sample_files")
 _INIT_SAMPLES_DIR = os.path.join(_REG_SAMPLES_DIR, "write_init_files")
@@ -33,7 +33,7 @@ _TMP_DIR = os.path.join(_PRE_TMP_DIR, "write_init_files")
 _SRC_MOD_DIR = os.path.join(_PRE_TMP_DIR, "SourceMods")
 _INC_SEARCH_DIRS = [_SRC_MOD_DIR, __REGISTRY_DIR]
 
-# Required CCPP control-variable metadata file.  Capgen-ng's
+# Required CCPP control-variable metadata file.  Capgen's
 # _validate_required_control_vars rejects a host that does not declare
 # the eight standard names (suite_name, horizontal_loop_begin / _end,
 # thread_number, number_of_threads, number_of_physics_threads,
@@ -54,8 +54,8 @@ if not os.path.exists(__COMPAT_DIR):
     raise ImportError(EMSG)
 
 if not os.path.exists(__CCPP_DIR):
-    EMSG = ("Cannot find CCPP framework directory (ccpp_framework/capgen-ng) "
-            "where 'ccpp_capgen_ng.py' should be located.")
+    EMSG = ("Cannot find CCPP framework directory (ccpp_framework/capgen) "
+            "where 'ccpp_capgen.py' should be located.")
     raise ImportError(EMSG)
 
 if not os.path.exists(__REGISTRY_DIR):
@@ -68,10 +68,10 @@ if not os.path.exists(_REG_SAMPLES_DIR):
 if not os.path.exists(_INIT_SAMPLES_DIR):
     raise ImportError("Cannot find 'write_init_files' sample files directory")
 
-# Add capgen-ng compat layer FIRST so the flat-module shims win over
+# Add capgen compat layer FIRST so the flat-module shims win over
 # any same-name modules that might live elsewhere on the path.
 sys.path.insert(0, __COMPAT_DIR)
-# Add capgen-ng itself so the compat shims' internal imports resolve.
+# Add capgen itself so the compat shims' internal imports resolve.
 sys.path.append(__CCPP_DIR)
 
 #Add registry directory to python path to import

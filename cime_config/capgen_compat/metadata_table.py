@@ -1,7 +1,7 @@
 """Flat-module shim for original capgen's ``metadata_table``.
 
 Re-exports a CAM-SIMA-shaped ``parse_metadata_file`` on top of
-capgen-ng's :func:`metadata.metadata_table.parse_metadata_file`.
+capgen's :func:`metadata.metadata_table.parse_metadata_file`.
 
 Signature adaptation
 --------------------
@@ -11,7 +11,7 @@ Original capgen's signature::
                         skip_ddt_check=False,
                         relative_source_path=False)
 
-Capgen-ng's signature::
+Capgen's signature::
 
     parse_metadata_file(file_path: str) -> List[MetadataTable]
 
@@ -19,27 +19,27 @@ The extra arguments served original-capgen-internal purposes
 (cross-referencing DDT lookups against a pre-built ``known_ddts``
 list, threading the ``CCPPFrameworkEnv`` through for logger access,
 selecting between absolute and relative source-path resolution).
-Capgen-ng's parser does not need any of them -- DDT cross-references
+Capgen's parser does not need any of them -- DDT cross-references
 are built lazily, logging is via the module-level logger, and source
 paths are always absolute.  The shim accepts all five positional /
 keyword arguments and silently discards the extras.
 
-``find_scheme_names`` is synthesised on top of capgen-ng's
+``find_scheme_names`` is synthesised on top of capgen's
 :func:`parse_metadata_file` plus a ``t.is_scheme`` filter; original
 capgen exported it directly.
 """
 
 from metadata.metadata_table import (
-    parse_metadata_file as _capgen_ng_parse_metadata_file,
+    parse_metadata_file as _capgen_parse_metadata_file,
     MetadataTable,  # noqa: F401
     MetadataSection,
     MetaVar,
-    _parse_lines as _capgen_ng_parse_lines,
+    _parse_lines as _capgen_parse_lines,
 )
 
 
 # Map original-capgen ``Var.get_prop_value`` property names to the
-# matching capgen-ng ``MetaVar`` attribute.  Original capgen's
+# matching capgen ``MetaVar`` attribute.  Original capgen's
 # property surface is broader than what CAM-SIMA exercises through
 # direct ``MetaVar`` iteration today; we cover the names that appear
 # in ``generate_registry_data.py`` / ``write_init_files.py`` plus the
@@ -70,7 +70,7 @@ _METAVAR_PROP_MAP = {
 def _metavar_get_prop_value(self, prop_name):
     """Original-capgen-style ``Var.get_prop_value`` on ``MetaVar``.
 
-    Returns the matching capgen-ng attribute, or ``None`` for unknown
+    Returns the matching capgen attribute, or ``None`` for unknown
     property names (matches original capgen's lenient policy).
     Monkey-patched onto :class:`MetaVar` at import time so existing
     instances pick it up automatically.
@@ -156,7 +156,7 @@ def _metavar_intrinsic_elements(self):
 
     Returns ``None`` (not ``[]``) for plain vars; CAM-SIMA's
     ``write_init_files.py`` distinguishes via
-    ``isinstance(ielem, list)``.  Capgen-ng does not currently expose
+    ``isinstance(ielem, list)``.  Capgen does not currently expose
     array-of-DDT decomposition on bare MetaVar; the only path that
     needs it goes through CapDatabase's host_dict facade
     (which delegates to ``_VarWrapper.intrinsic_elements``).
@@ -219,7 +219,7 @@ def _variable_list(self, recursive=False,
                    std_vars=True, loop_vars=True, consts=True):
     """Original-capgen-compat ``MetadataSection.variable_list`` method.
 
-    capgen-ng's :class:`metadata.metadata_table.MetadataSection`
+    capgen's :class:`metadata.metadata_table.MetadataSection`
     exposes a bare ``variables`` list attribute; CAM-SIMA's
     ``generate_registry_data.py`` (and downstream code) call
     ``mheader.variable_list(loop_vars=False, consts=False)`` to filter
@@ -235,11 +235,11 @@ def _variable_list(self, recursive=False,
       storage flag.
 
     *recursive* is accepted for signature parity and ignored --
-    capgen-ng's MetadataSection has no parent-dict concept and the
+    capgen's MetadataSection has no parent-dict concept and the
     only CAM-SIMA call site sets ``recursive=False``.
 
     Monkey-patched onto :class:`MetadataSection` at import time so
-    existing capgen-ng MetadataSection instances pick it up
+    existing capgen MetadataSection instances pick it up
     automatically.
     """
     out = []
@@ -275,16 +275,16 @@ _TABLE_TYPE_RE = _re_parse.compile(
 _TABLE_NAME_RE = _re_parse.compile(r'^\s*name\s*=\s*(\S+)\s*$')
 _TABLE_HDR     = '[ccpp-table-properties]'
 
-# Attributes capgen-ng does not recognise but original capgen did.
+# Attributes capgen does not recognise but original capgen did.
 # Listed here for parse-time stripping by ``_rewrite_module_to_host``.
-# Each is semantically irrelevant to cap generation (capgen-ng's
+# Each is semantically irrelevant to cap generation (capgen's
 # resolver ignores all of them); the consumer is CAM-SIMA's own
 # tooling, which reads metadata through THIS shim and so never sees
 # the attribute either way.  Lines matching ``<indent><name>=...``
 # are silently dropped.
 #
 # * ``persistence = timestep|run`` -- CAM-SIMA's allocator reset
-#   cadence hint.  No capgen-ng equivalent.
+#   cadence hint.  No capgen equivalent.
 _DROP_ATTRS = frozenset({
     'persistence',
 })
@@ -314,8 +314,8 @@ def _rewrite_module_to_host(text):
     matching arg-table one) are rewritten; the table-properties
     occurrence is the one that drives the table-name capture.
 
-    capgen-ng's parser rejects ``type = module`` outright; the rewrite
-    keeps the metadata semantically valid for capgen-ng while
+    capgen's parser rejects ``type = module`` outright; the rewrite
+    keeps the metadata semantically valid for capgen while
     preserving the original-capgen distinction in
     ``MODULE_ORIGIN_TABLE_NAMES`` so ``_VarWrapper.from_host_entry``
     can route module-allocated vars through ``ptype = 'module'``.
@@ -343,10 +343,10 @@ def _rewrite_module_to_host(text):
             m = _TABLE_NAME_RE.match(line)
             if m:
                 cur_table = m.group(1)
-        # Drop attributes capgen-ng doesn't model (see ``_DROP_ATTRS``).
-        # They live inside per-variable [ name ] blocks and capgen-ng
+        # Drop attributes capgen doesn't model (see ``_DROP_ATTRS``).
+        # They live inside per-variable [ name ] blocks and capgen
         # rejects unknown attribute names; silently skipping them
-        # keeps the metadata semantically valid for capgen-ng while
+        # keeps the metadata semantically valid for capgen while
         # preserving the original file on disk unchanged.
         if _DROP_ATTR_RE.match(line):
             continue
@@ -375,7 +375,7 @@ def _backfill_module_name(tables):
     Original capgen exposed ``MetadataTable.module_name`` as the
     Fortran module exporting the table's symbols, and treated the
     table name as the implicit default when no ``module_name = ...``
-    override was declared.  Capgen-ng leaves the attribute as ``''``
+    override was declared.  Capgen leaves the attribute as ``''``
     in that case and resolves the fallback elsewhere (deeper in the
     cap emitter).  CAM-SIMA's ``generate_registry_data.py`` reads
     ``mtable.module_name`` directly when building its
@@ -395,14 +395,14 @@ def parse_metadata_file(filename, known_ddts=None, run_env=None,
                         relative_source_path=False):
     """Original-capgen-shaped ``parse_metadata_file`` wrapper.
 
-    Forwards *filename* to capgen-ng's parser and silently discards
-    every other argument; capgen-ng's parser does not need them.
+    Forwards *filename* to capgen's parser and silently discards
+    every other argument; capgen's parser does not need them.
 
     If *filename* declares any ``type = module`` tables, the contents
-    are rewritten in-memory to ``type = host`` (so capgen-ng's parser
+    are rewritten in-memory to ``type = host`` (so capgen's parser
     accepts the file) and the affected table names are added to
     :data:`MODULE_ORIGIN_TABLE_NAMES`.  The rewrite is invisible to
-    callers; the returned tables look exactly like capgen-ng would
+    callers; the returned tables look exactly like capgen would
     have produced for a natively-``type = host`` file.
 
     Each returned table also has its ``module_name`` defaulted to
@@ -413,44 +413,44 @@ def parse_metadata_file(filename, known_ddts=None, run_env=None,
         with open(filename, encoding='utf-8') as fh:
             text = fh.read()
     except (OSError, UnicodeDecodeError):
-        # Let capgen-ng surface the real error.
-        return _backfill_module_name(_capgen_ng_parse_metadata_file(filename))
+        # Let capgen surface the real error.
+        return _backfill_module_name(_capgen_parse_metadata_file(filename))
 
     rewritten, flagged = _rewrite_module_to_host(text)
     MODULE_ORIGIN_TABLE_NAMES.update(flagged)
 
     if rewritten == text:
         # Nothing was rewritten and no attrs were dropped.
-        return _backfill_module_name(_capgen_ng_parse_metadata_file(filename))
+        return _backfill_module_name(_capgen_parse_metadata_file(filename))
 
-    # Hand the rewritten content to capgen-ng's ``_parse_lines``
+    # Hand the rewritten content to capgen's ``_parse_lines``
     # directly with the ORIGINAL filename as the source location.
     # That keeps error messages, line-number references, and
     # per-table ``source_path`` resolution pointing at the real file
     # (no temp-file leakage into user-visible diagnostics) while
-    # capgen-ng's parser sees the rewritten contents.
+    # capgen's parser sees the rewritten contents.
     rewritten_lines = rewritten.splitlines(keepends=True)
     return _backfill_module_name(
-        _capgen_ng_parse_lines(rewritten_lines, filename))
+        _capgen_parse_lines(rewritten_lines, filename))
 
 
-# Monkey-patch capgen-ng's own ``parse_metadata_file`` so its
-# internal calls (made from ``ccpp_capgen_ng.capgen``,
+# Monkey-patch capgen's own ``parse_metadata_file`` so its
+# internal calls (made from ``ccpp_capgen.capgen``,
 # ``_load_metadata_files``, etc.) route through our rewriter and
 # pick up the type=module → type=host fix-up.  The shim's public
 # ``parse_metadata_file`` above also uses the same rewriter -- this
 # patch covers the path cam-sima doesn't control.
-import metadata.metadata_table as _capgen_ng_meta_mod  # noqa: E402
+import metadata.metadata_table as _capgen_meta_mod  # noqa: E402
 
-if getattr(_capgen_ng_meta_mod.parse_metadata_file,
+if getattr(_capgen_meta_mod.parse_metadata_file,
            '_capgen_compat_wrapped', False) is False:
-    _orig = _capgen_ng_parse_metadata_file
+    _orig = _capgen_parse_metadata_file
 
     def _patched_parse_metadata_file(file_path):
         return parse_metadata_file(file_path)
 
     _patched_parse_metadata_file._capgen_compat_wrapped = True
-    _capgen_ng_meta_mod.parse_metadata_file = _patched_parse_metadata_file
+    _capgen_meta_mod.parse_metadata_file = _patched_parse_metadata_file
 
 
 def _scan_module_origin_tables(file_path):
@@ -458,8 +458,8 @@ def _scan_module_origin_tables(file_path):
     ``[ccpp-table-properties]`` declared ``type = module``.
 
     Used by ``_runner.capgen`` to pre-populate
-    :data:`MODULE_ORIGIN_TABLE_NAMES` before capgen-ng's internal
-    metadata parser runs (capgen-ng's parser calls
+    :data:`MODULE_ORIGIN_TABLE_NAMES` before capgen's internal
+    metadata parser runs (capgen's parser calls
     :func:`metadata.metadata_table.parse_metadata_file` directly --
     not through this shim -- so the pre-scan ensures the set is up to
     date by the time ``_VarWrapper.from_host_entry`` is invoked).
@@ -482,7 +482,7 @@ def find_scheme_names(file_path: str) -> list:
     similarly lightweight scan; CAM-SIMA's ``cam_autogen.py`` uses it
     as a discovery callback into ``_find_metadata_files`` -- it cares
     only about scheme NAMES, not whether each scheme block is a
-    valid CCPP scheme by capgen-ng's strict semantic rules (which
+    valid CCPP scheme by capgen's strict semantic rules (which
     includes per-phase arg-table validation).  Routing through
     :func:`parse_metadata_file` would fail-fast on degenerate
     discovery fixtures (e.g. namelist-reader pseudo-schemes whose

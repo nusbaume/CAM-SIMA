@@ -18,11 +18,11 @@ import logging
 from collections import OrderedDict
 
 # Find and include both the capgen_compat flat-shim directory and
-# the capgen-ng external.  See cime_config/capgen_compat/README.md.
+# the capgen external.  See cime_config/capgen_compat/README.md.
 __CURRDIR = os.path.abspath(os.path.dirname(__file__))
 __CAMROOT = os.path.abspath(os.path.join(__CURRDIR, os.pardir, os.pardir))
 __COMPAT_DIR = os.path.join(__CAMROOT, "cime_config", "capgen_compat")
-__SPINSCRIPTS = os.path.join(__CAMROOT, "ccpp_framework", "capgen-ng")
+__SPINSCRIPTS = os.path.join(__CAMROOT, "ccpp_framework", "capgen")
 # Insert compat dir at the front so flat-shim modules win the resolve.
 if __COMPAT_DIR not in sys.path:
     sys.path.insert(0, __COMPAT_DIR)
@@ -1071,7 +1071,7 @@ class VarDict(OrderedDict):
         vocabulary (``host`` / ``module`` / ``ddt``).  The
         capgen_compat layer's ``metadata_table`` shim rewrites
         ``type = module`` to ``type = host`` at parse time so
-        capgen-ng's stricter parser accepts the file, and records the
+        capgen's stricter parser accepts the file, and records the
         affected table names in ``MODULE_ORIGIN_TABLE_NAMES`` so the
         ``_VarWrapper`` can preserve original capgen's
         ``source.ptype = 'module'`` classification -- which

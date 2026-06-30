@@ -24,10 +24,10 @@ import xml.etree.ElementTree as ET
 _TEST_DIR = os.path.dirname(os.path.abspath(__file__))
 _CAM_ROOT = os.path.abspath(os.path.join(_TEST_DIR, os.pardir, os.pardir, os.pardir))
 _CIME_CONFIG_DIR = os.path.join(_CAM_ROOT, "cime_config")
-# capgen-ng compatibility layer (flat-module shims + adapter):
+# capgen compatibility layer (flat-module shims + adapter):
 _COMPAT_DIR = os.path.join(_CIME_CONFIG_DIR, "capgen_compat")
-# capgen-ng itself (the canonical CCPP code generator):
-_CCPP_DIR = os.path.join(_CAM_ROOT, "ccpp_framework", "capgen-ng")
+# capgen itself (the canonical CCPP code generator):
+_CCPP_DIR = os.path.join(_CAM_ROOT, "ccpp_framework", "capgen")
 _XML_SAMPLES_DIR = os.path.join(_TEST_DIR, "sample_files")
 _NL_SAMPLES_DIR = os.path.join(_XML_SAMPLES_DIR, "namelist_files")
 _PRE_TMP_DIR = os.path.join(_TEST_DIR, "tmp")
@@ -40,7 +40,7 @@ if not os.path.exists(_COMPAT_DIR):
     raise ImportError(EMSG)
 
 if not os.path.exists(_CCPP_DIR):
-    EMSG = "Cannot find CCPP framework directory (ccpp_framework/capgen-ng)."
+    EMSG = "Cannot find CCPP framework directory (ccpp_framework/capgen)."
     raise ImportError(EMSG)
 
 if not os.path.exists(_CIME_CONFIG_DIR):
@@ -53,9 +53,9 @@ if not os.path.exists(_XML_SAMPLES_DIR):
 if not os.path.exists(_NL_SAMPLES_DIR):
     raise ImportError("Cannot find 'namelist_files' sample files directory")
 
-# Add capgen-ng compat layer FIRST so the flat-module shims win.
+# Add capgen compat layer FIRST so the flat-module shims win.
 sys.path.insert(0, _COMPAT_DIR)
-# Add capgen-ng itself so the compat shims' internal imports resolve.
+# Add capgen itself so the compat shims' internal imports resolve.
 sys.path.append(_CCPP_DIR)
 sys.path.append(_CIME_CONFIG_DIR)
 

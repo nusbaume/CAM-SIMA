@@ -1,5 +1,5 @@
 """Variable wrapper exposing original capgen's per-variable Python
-surface on top of capgen-ng's ``HostVarEntry`` / ``ResolvedArg``.
+surface on top of capgen's ``HostVarEntry`` / ``ResolvedArg``.
 
 The 14-method surface ``write_init_files.py`` reads is implemented
 uniformly across both backing types via the
@@ -117,10 +117,10 @@ class _VarWrapper:
     ) -> '_VarWrapper':
         """Build a wrapper for a host-dict entry (``HostVarEntry``)."""
         # Control variables have module_name=None → ptype = 'API'
-        # (capgen-ng's framework-injected vars; cam-sima's
+        # (capgen's framework-injected vars; cam-sima's
         # write_init_files filter ``ptype != 'host'`` includes them).
         #
-        # Otherwise we need to distinguish two cases that capgen-ng
+        # Otherwise we need to distinguish two cases that capgen
         # collapsed into one ``type = host`` after the type=module
         # rename:
         #
@@ -143,7 +143,7 @@ class _VarWrapper:
         else:
             from metadata_table import MODULE_ORIGIN_TABLE_NAMES
             # The HostVarEntry.module_name attribute carries the
-            # Fortran module name -- which capgen-ng defaults to the
+            # Fortran module name -- which capgen defaults to the
             # metadata table name when no explicit override was
             # supplied.  generate_registry_data.py emits tables whose
             # name matches the Fortran module, so the same string
@@ -154,7 +154,7 @@ class _VarWrapper:
             else:
                 ptype = 'host'
         source = _Source(ptype=ptype, name=entry.module_name)
-        # capgen-ng's HostVarEntry has two distinct fields that
+        # capgen's HostVarEntry has two distinct fields that
         # original capgen split across two property layers:
         #
         #  * ``entry.local_name``  -- the leaf identifier
@@ -184,7 +184,7 @@ class _VarWrapper:
                 root_name = ap
         # ``local_subscript`` carries the array-of-DDT element-index
         # tokens (e.g. ``[':', ':', 'index_of_potential_temperature']``)
-        # captured by capgen-ng at parse time but not surfaced through
+        # captured by capgen at parse time but not surfaced through
         # any of the wrapper's default fields.  Pass it through so
         # ``array_ref()`` and ``call_string()`` can synthesise the
         # sliced spelling original capgen used.
@@ -238,7 +238,7 @@ class _VarWrapper:
         # write_init_files keys constituent handling -- skip USE-import and
         # skip the initial-conditions read; the constituents object supplies
         # the value at runtime -- on the call-list var's ``advected`` /
-        # ``constituent`` property.  Capgen-ng tags EVERY framework-provided
+        # ``constituent`` property.  Capgen tags EVERY framework-provided
         # constituent arg with ``source == 'constituent'``: base species
         # (vars_layer), constituent tendencies (vars_layer_tend), the
         # framework arrays/counts, ``index_of_*`` integers, and the
@@ -360,7 +360,7 @@ class _VarWrapper:
            (the metadata declared the var with a sliced spelling such
            as ``q(:,:,index_of_X)``).
         2. ``local_subscript`` carries the array-of-DDT index tokens
-           captured by capgen-ng's resolver (the registry-emitted
+           captured by capgen's resolver (the registry-emitted
            sliced spelling, e.g.
            ``[':', ':', 'index_of_potential_temperature']``).  We
            synthesise a ``local_name(s1, s2, ...)`` string and run the
@@ -408,7 +408,7 @@ class _VarWrapper:
         The result is lowercased to match original capgen's emission
         convention (its Var.local_name was lowercased at parse time,
         so every cap-emitted Fortran identifier came out lower-case).
-        capgen-ng preserves the metadata's case verbatim; lowercasing
+        capgen preserves the metadata's case verbatim; lowercasing
         here keeps the generated phys_input / phys_check Fortran
         byte-equal to the committed CAM-SIMA goldens.  Fortran is
         case-insensitive so the compiled behaviour is unaffected.

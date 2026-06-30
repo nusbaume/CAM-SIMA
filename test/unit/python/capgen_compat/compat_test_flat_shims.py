@@ -48,7 +48,7 @@ class TestParseToolsShim(unittest.TestCase):
     def test_parse_object_curr_line(self):
         """``.curr_line()`` returns ``(line, line_num)`` from the
         provided buffer.  Smoke test that the writable line_num path
-        works (capgen-ng's bare ParseContext has read-only line_num,
+        works (capgen's bare ParseContext has read-only line_num,
         which is why the vendor was needed)."""
         import parse_tools as pt
         obj = pt.ParseObject('foobar.F90',

@@ -38,10 +38,10 @@ _PRE_TMP_DIR = os.path.join(_CURRDIR, "tmp")
 _TMP_DIR = os.path.join(_PRE_TMP_DIR, "cam_build_cache")
 _SAMPLES_DIR = os.path.join(_CURRDIR, "sample_files", "build_cache_files")
 _WRITE_INIT_DIR = os.path.join(_CURRDIR, "sample_files", "write_init_files")
-# capgen-ng compatibility layer (flat-module shims + adapter):
+# capgen compatibility layer (flat-module shims + adapter):
 _COMPAT_DIR = os.path.join(_CAM_CONF_DIR, "capgen_compat")
-# capgen-ng itself (the canonical CCPP code generator):
-_CCPP_FRAMEWORK = os.path.join(_CAM_ROOT_DIR, "ccpp_framework", "capgen-ng")
+# capgen itself (the canonical CCPP code generator):
+_CCPP_FRAMEWORK = os.path.join(_CAM_ROOT_DIR, "ccpp_framework", "capgen")
 
 #Check for all necessary directories:
 if not os.path.exists(_CAM_CONF_DIR):
@@ -57,10 +57,10 @@ if not os.path.exists(_CCPP_FRAMEWORK):
     raise ImportError(_EMSG)
 #End if
 
-# Add capgen-ng compat layer FIRST so the flat-module shims win.
+# Add capgen compat layer FIRST so the flat-module shims win.
 sys.path.insert(0, _COMPAT_DIR)
 
-#Add capgen-ng itself so the compat shims' internal imports resolve:
+#Add capgen itself so the compat shims' internal imports resolve:
 sys.path.append(_CCPP_FRAMEWORK)
 
 #Add "cime_config" directory to python path:

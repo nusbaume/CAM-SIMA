@@ -1,6 +1,6 @@
 """Tests for ``capgen_compat._runner`` helpers.
 
-Capgen-ng hardcodes its datatable output to ``<output_root>/datatable.xml``;
+Capgen hardcodes its datatable output to ``<output_root>/datatable.xml``;
 CAM-SIMA's ``cam_autogen.py`` reads back from ``ccpp_datatable.xml`` (the
 path passed via ``CCPPFrameworkEnv.ccpp_datafile``).  The compat layer
 renames the produced file to bridge that naming gap; if no rename is
@@ -34,7 +34,7 @@ class TestRenameDatatable(unittest.TestCase):
             self.assertFalse(os.path.isfile(os.path.join(out, 'datatable.xml')))
 
     def test_noop_when_already_matches(self):
-        # Requested path is exactly what capgen-ng produced; the
+        # Requested path is exactly what capgen produced; the
         # rename is a no-op and must not delete the file.
         with tempfile.TemporaryDirectory() as out:
             produced = self._produce(out)
@@ -51,7 +51,7 @@ class TestRenameDatatable(unittest.TestCase):
             self.assertTrue(os.path.isfile(target))
 
     def test_missing_source_logs_warning(self):
-        # If capgen-ng didn't produce the file for some reason,
+        # If capgen didn't produce the file for some reason,
         # the helper warns rather than raising -- the caller has
         # better context for failure handling.
         with tempfile.TemporaryDirectory() as out:

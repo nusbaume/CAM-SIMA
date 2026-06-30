@@ -11,11 +11,11 @@ import re
 import sys
 
 # Find and include both the capgen_compat flat-shim directory and
-# the capgen-ng external.  See cime_config/capgen_compat/README.md.
+# the capgen external.  See cime_config/capgen_compat/README.md.
 __CURRDIR = os.path.abspath(os.path.dirname(__file__))
 __CAMROOT = os.path.abspath(os.path.join(__CURRDIR, os.pardir))
 __COMPAT_DIR = os.path.join(__CURRDIR, "capgen_compat")
-__CCPPSCRIPTS = os.path.join(__CAMROOT, "ccpp_framework", "capgen-ng")
+__CCPPSCRIPTS = os.path.join(__CAMROOT, "ccpp_framework", "capgen")
 # Insert compat dir at the front so flat-shim modules win the resolve.
 if __COMPAT_DIR not in sys.path:
     sys.path.insert(0, __COMPAT_DIR)

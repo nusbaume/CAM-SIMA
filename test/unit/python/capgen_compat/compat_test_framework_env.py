@@ -37,8 +37,8 @@ class TestCCPPFrameworkEnv(unittest.TestCase):
         # original-capgen's auto-clone-static-constituent path: ~16
         # schemes declare advected=True on _run args and let the
         # framework register the constituent on their behalf.  Without
-        # the shim capgen-ng rejects them.  Single-instance only;
-        # capgen-ng's runner aborts before parsing if the host opts
+        # the shim capgen rejects them.  Single-instance only;
+        # capgen's runner aborts before parsing if the host opts
         # into multi-instance, so the default is safe for any
         # single-instance CAM-SIMA build.
         env = CCPPFrameworkEnv(logging.getLogger('test'))

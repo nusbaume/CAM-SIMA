@@ -1,16 +1,16 @@
 ########################################################################
-# Required CCPP control variables for capgen-ng.
+# Required CCPP control variables for capgen.
 #
 # Control variables are *framework-injected* at scheme call sites --
 # they have no backing Fortran module.  The host's driver code creates
 # the values and passes them as arguments to ccpp_register, ccpp_init,
 # ccpp_physics_register / _init / _timestep_init / _run /
-# _timestep_final / _final / _final.  Capgen-ng's static API generator
+# _timestep_final / _final / _final.  Capgen's static API generator
 # uses the local_name in each [ name ] block as the dummy argument
 # name in the generated public-entry-point signatures.
 #
 # Every host must declare these nine standard names in a control
-# table.  Capgen-ng's _validate_required_control_vars enforces the
+# table.  Capgen's _validate_required_control_vars enforces the
 # list.
 ########################################################################
 [ccpp-table-properties]

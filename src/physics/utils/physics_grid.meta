@@ -19,7 +19,7 @@
   type = integer
   protected = True
 # col_start (horizontal_loop_begin) and col_end (horizontal_loop_end)
-# moved to src/data/ccpp_control_vars.meta -- capgen-ng requires them
+# moved to src/data/ccpp_control_vars.meta -- capgen requires them
 # in a type = control table because they are framework-injected at
 # each ccpp_physics_run call.
 [ phys_grid_initialized ]

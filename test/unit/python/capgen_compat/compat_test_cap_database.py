@@ -85,7 +85,7 @@ class TestCallList(unittest.TestCase):
         self.assertEqual(len(db.call_list('init').variable_list()), 1)
 
     def test_call_list_drops_suite_internal_args(self):
-        # Capgen-ng tags vars produced by one scheme and consumed by
+        # Capgen tags vars produced by one scheme and consumed by
         # another within the same suite (e.g. air_potential_temperature,
         # dimensionless_exner_function, scheme_name in CAM-SIMA's
         # kessler suite) with source='suite'.  Those must not appear

@@ -3,11 +3,11 @@
 
 Vendored verbatim from the original ccpp_framework
 (``ccpp_framework/scripts/parse_tools/parse_object.py``) so CAM-SIMA's
-``hist_config.py`` namelist parser keeps working against capgen-ng,
+``hist_config.py`` namelist parser keeps working against capgen,
 which does not bundle a free-form config parser of its own.  The only
 adaptation here is the import line: original capgen pulled
 ``ParseContext`` / ``CCPPError`` / ``context_string`` from a sibling
-``parse_source`` module; capgen-ng exposes them through
+``parse_source`` module; capgen exposes them through
 ``metadata.parse_tools.parse_source``, and the compat layer's
 ``parse_source`` shim re-exports them at the flat-module path.
 """

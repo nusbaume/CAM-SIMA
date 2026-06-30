@@ -8,18 +8,18 @@ Vendored from original ccpp_framework
 richer ``ParseContext`` API (writable ``line_num``, region stack,
 ``increment()`` / ``enter_region()`` / ``leave_region()``).
 
-Capgen-ng ships a stripped-down ``ParseContext`` whose ``line_num`` is
-read-only -- enough for capgen-ng's own metadata parser but
+Capgen ships a stripped-down ``ParseContext`` whose ``line_num`` is
+read-only -- enough for capgen's own metadata parser but
 insufficient for CAM-SIMA's free-form config consumers.  Both
 ParseContexts coexist:
 
-* ``metadata.parse_tools.parse_source.ParseContext`` (capgen-ng's)
-  -- used by capgen-ng internals.
+* ``metadata.parse_tools.parse_source.ParseContext`` (capgen's)
+  -- used by capgen internals.
 * This vendored ``ParseContext`` -- used by CAM-SIMA code that hits
   the ``from parse_source import ...`` path through the compat shim.
 
 The exception hierarchy (``CCPPError``, ``ParseSyntaxError``,
-``ParseInternalError``) is re-exported from capgen-ng so an exception
+``ParseInternalError``) is re-exported from capgen so an exception
 raised by either side can be caught uniformly.  ``ParseContextError``
 inherits from the re-exported ``CCPPError``, so the same catch
 catches it too.
@@ -33,7 +33,7 @@ import sys
 import os.path
 import logging
 
-# Re-export the exception classes from capgen-ng so cross-boundary
+# Re-export the exception classes from capgen so cross-boundary
 # raises / catches resolve to a single class identity.  The remainder
 # of the module is the verbatim original-capgen vendor copy.
 from metadata.parse_tools.parse_source import (
@@ -148,7 +148,7 @@ def type_name(obj):
 
 ########################################################################
 # CCPPError / ParseSyntaxError / ParseInternalError are re-exported
-# from capgen-ng above so the exception hierarchy is shared.
+# from capgen above so the exception hierarchy is shared.
 ########################################################################
 
 class ParseContextError(CCPPError):

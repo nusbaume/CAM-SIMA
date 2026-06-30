@@ -2,7 +2,7 @@
 
 Receives the positional logger + kwargs that ``cam_autogen.py:647``
 passes, exposes them as attributes for :func:`_runner.capgen` to map
-to capgen-ng's keyword API.
+to capgen's keyword API.
 """
 
 _KNOWN_KWARGS = frozenset({
@@ -11,7 +11,7 @@ _KNOWN_KWARGS = frozenset({
     'host_name', 'kind_types',
     'use_error_obj', 'force_overwrite',
     'output_root', 'ccpp_datafile',
-    # capgen-ng-specific transient migration shims.  Set to True to
+    # capgen-specific transient migration shims.  Set to True to
     # opt into the matching shim while CAM-SIMA metadata is being
     # migrated off the deprecated spellings.
     'legacy_mode',          # horizontal_loop_extent + number_of_openmp_threads
@@ -28,7 +28,7 @@ _KNOWN_KWARGS = frozenset({
 # scheme metadata still spells the horizontal axis as
 # ``horizontal_loop_extent`` (119 .meta files at last count) and the
 # OpenMP thread count as ``number_of_openmp_threads``; the shim is
-# silent on metadata that already uses the canonical capgen-ng names,
+# silent on metadata that already uses the canonical capgen names,
 # so leaving it on costs nothing for migrated metadata.  Explicitly
 # pass ``legacy_mode=False`` to disable.
 #
@@ -38,10 +38,10 @@ _KNOWN_KWARGS = frozenset({
 # dadadj, holtslag_boville_diff, state_converters, geopotential_temp,
 # cloud_particle_sedimentation, …) declare ``advected = True`` on
 # their ``_run`` arg-tables and let the framework register the
-# constituent on their behalf.  Without the shim, capgen-ng's stricter
+# constituent on their behalf.  Without the shim, capgen's stricter
 # rule -- physics phases may only produce tendencies, not new base
 # constituents -- fires on the first such scheme.  The shim is
-# single-instance only; capgen-ng aborts before parsing if the host
+# single-instance only; capgen aborts before parsing if the host
 # declares ``instance_number`` + ``number_of_instances``, so leaving
 # it on is safe for any single-instance CAM-SIMA build.  Explicitly
 # pass ``legacy_auto_clone_constituents=False`` to disable.

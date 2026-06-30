@@ -1,12 +1,12 @@
 """Flat-module shim for original capgen's ``parse_tools``.
 
-Re-exports symbols from capgen-ng's ``metadata.parse_tools`` package
+Re-exports symbols from capgen's ``metadata.parse_tools`` package
 and supplements with two helpers that live in the xml_tools submodule
 but aren't re-exported at the package level
 (``validate_xml_file``, ``find_schema_file``).
 
 ``ParseObject`` is original capgen's free-form-config parser state
-container.  capgen-ng does not bundle one; the compat layer ships a
+container.  capgen does not bundle one; the compat layer ships a
 verbatim vendor copy at ``capgen_compat/parse_object.py`` (~166 LOC,
 no external deps beyond ``parse_source``) so CAM-SIMA's
 ``hist_config.py`` namelist parser keeps working.

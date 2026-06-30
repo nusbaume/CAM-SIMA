@@ -18,11 +18,11 @@ import logging
 import math
 
 # Find and include both the capgen_compat flat-shim directory and
-# the capgen-ng external.  See cime_config/capgen_compat/README.md.
+# the capgen external.  See cime_config/capgen_compat/README.md.
 _CURRDIR = os.path.abspath(os.path.dirname(__file__))
 _CAMROOT = os.path.abspath(os.path.join(_CURRDIR, os.pardir))
 _COMPAT_DIR = os.path.join(_CURRDIR, "capgen_compat")
-_SPINSCRIPTS = os.path.join(_CAMROOT, "ccpp_framework", "capgen-ng")
+_SPINSCRIPTS = os.path.join(_CAMROOT, "ccpp_framework", "capgen")
 _XML_SCHEMAS = os.path.join(_CAMROOT, "cime", "CIME", "data", "config",
                             "xml_schemas")
 _PG_SCHEMAS = os.path.join(_CAMROOT, "cime", "CIME", "ParamGen",
