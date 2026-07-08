@@ -39,7 +39,6 @@ import logging
 from metadata.parse_tools.parse_source import (
     CCPPError,
     ParseSyntaxError,
-    ParseInternalError,
 )
 
 class _StdNameCounter():
@@ -147,8 +146,20 @@ def type_name(obj):
     return type(obj).__name__
 
 ########################################################################
-# CCPPError / ParseSyntaxError / ParseInternalError are re-exported
-# from capgen above so the exception hierarchy is shared.
+# CCPPError / ParseSyntaxError are re-exported from capgen above so the
+# exception hierarchy is shared.  ParseInternalError is defined locally:
+# capgen no longer ships one (it never raises or catches it), so there is
+# no cross-boundary class identity to preserve -- only CAM-SIMA raises it.
+########################################################################
+
+class ParseInternalError(Exception):
+    """Exception for internal parser use: not to be trapped as a user error"""
+    def __init__(self, errmsg, context=None):
+        """Initialize this exception"""
+        logging.shutdown()
+        message = "{}{}".format(errmsg, context_string(context))
+        super().__init__(message)
+
 ########################################################################
 
 class ParseContextError(CCPPError):

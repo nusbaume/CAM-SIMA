@@ -15,9 +15,7 @@ no external deps beyond ``parse_source``) so CAM-SIMA's
 from metadata.parse_tools import (
     CCPPError,
     ParseSyntaxError,
-    ParseInternalError,
     ParseContext,
-    context_string,
     init_log,
     set_log_level,
     set_log_to_null,
@@ -34,6 +32,10 @@ from metadata.parse_tools.xml_tools import (
     validate_xml_file,
     find_schema_file,
 )
+
+# Pushed down from capgen (which no longer ships them): the vendored
+# ``context_string`` and the CAM-SIMA-only ``ParseInternalError``.
+from parse_source import ParseInternalError, context_string
 
 # Vendored ParseObject -- see ``capgen_compat/parse_object.py``.
 from parse_object import ParseObject

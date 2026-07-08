@@ -46,10 +46,10 @@ class TestParseToolsShim(unittest.TestCase):
         self.assertEqual(obj.filename, 'test.F90')
 
     def test_parse_object_curr_line(self):
-        """``.curr_line()`` returns ``(line, line_num)`` from the
-        provided buffer.  Smoke test that the writable line_num path
-        works (capgen's bare ParseContext has read-only line_num,
-        which is why the vendor was needed)."""
+        """``.curr_line()`` returns ``(line, line_num)`` from the buffer.
+        Smoke-tests ParseObject's advancing line_num.  ParseObject is
+        vendored from original capgen because capgen-ng ships none — its
+        ParseContext is a minimal position record, not a parser."""
         import parse_tools as pt
         obj = pt.ParseObject('foobar.F90',
                              ['first line', '## hi mom'],
