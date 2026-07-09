@@ -27,10 +27,10 @@ from metadata.parse_tools import (
     open_if_changed,
 )
 
-from metadata.parse_tools.xml_tools import (
-    validate_xml_file,
-    find_schema_file,
-)
+# Pushed down from capgen: the general validator + schema-file lookup.
+# capgen's own validate_xml_file is now suite-only; CAM-SIMA's namelist
+# (file-path schema) and registry ('registry' root) validation live here.
+from xml_tools import validate_xml_file, find_schema_file
 
 # Pushed down from capgen (which no longer ships them): the vendored
 # ``context_string`` and the CAM-SIMA-only ``ParseInternalError``.
