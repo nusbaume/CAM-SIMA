@@ -115,6 +115,12 @@
   </compset>
 
   <compset>
+    <!-- Year 1850 Prescribed SSTs/sea ice simulation with CAM4 physics -->
+    <alias>F1850_C4</alias>
+    <lname>1850_CAM40_CLM50%SP_CICE%PRES_DOCN%DOM_MOSART_SGLC_SWAV</lname>
+  </compset>
+
+  <compset>
     <alias>F2010climo</alias>
     <lname>2010_CAM60_CLM50%SP_CICE%PRES_DOCN%DOM_MOSART_CISM2%NOEVOLVE_SWAV</lname>
   </compset>
