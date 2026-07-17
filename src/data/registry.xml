@@ -2051,6 +2051,7 @@
               units="fraction" type="real" kind="kind_phys"
               allocatable="allocatable">
       <dimensions>horizontal_dimension vertical_layer_dimension</dimensions>
+      <initial_value>0._kind_phys</initial_value>
       <ic_file_input_names>ALST pbuf_ALST</ic_file_input_names>
     </variable>
     <variable local_name="strat_ice_cldfrc_in"
@@ -2058,6 +2059,7 @@
               units="fraction" type="real" kind="kind_phys"
               allocatable="allocatable">
       <dimensions>horizontal_dimension vertical_layer_dimension</dimensions>
+      <initial_value>0._kind_phys</initial_value>
       <ic_file_input_names>AIST pbuf_AIST</ic_file_input_names>
     </variable>
     <variable local_name="qsatfac_in"
@@ -2096,13 +2098,24 @@
       <dimensions>horizontal_dimension vertical_layer_dimension dust_size_bin_dimension</dimensions>
       <ic_file_input_names>NACON pbuf_NACON</ic_file_input_names>
     </variable>
-    <variable local_name="effi_external_in"
+    <variable local_name="rei"
               standard_name="effective_radius_of_stratiform_cloud_ice_crystal"
               units="um" type="real" kind="kind_phys"
               allocatable="allocatable">
       <dimensions>horizontal_dimension vertical_layer_dimension</dimensions>
       <ic_file_input_names>REI pbuf_REI</ic_file_input_names>
-    </variable>    <variable local_name="frzimm_in"
+    </variable>
+    <variable local_name="re_ice_external_in"
+              standard_name="effective_radius_of_stratiform_cloud_ice_crystal_from_external_microphysics"
+              units="m" type="real" kind="kind_phys"
+              allocatable="allocatable">
+      <long_name>ice effective radius from external microphysics model (e.g. CARMA) used only when do_cldice is false for PUMAS</long_name>
+      <!-- this is a distinct value from the ice effective radius from PUMAS itself -->
+      <dimensions>horizontal_dimension vertical_layer_dimension</dimensions>
+      <initial_value>0._kind_phys</initial_value>
+      <!--<ic_file_input_names>RE_ICE pbuf_RE_ICE</ic_file_input_names>-->
+    </variable>
+    <variable local_name="frzimm_in"
               standard_name="tendency_of_cloud_liquid_droplet_number_concentration_due_to_immersion_freezing"
               units="cm-3" type="real" kind="kind_phys"
               allocatable="allocatable">
