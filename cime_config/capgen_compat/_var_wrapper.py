@@ -26,6 +26,32 @@ _VERT_DIM_STDS: frozenset = frozenset({
 _ARRAY_REF_RE = re.compile(r'^(\w+)\s*\(([^)]+)\)\s*$')
 
 
+def _is_base_constituent_name(std_name: str, arg) -> bool:
+    """True iff *std_name* names a base constituent species.
+
+    Base species are the only constituent args the runtime can resolve by
+    standard name through ``const_get_index``; see the ``advected``
+    discussion in :meth:`_VarWrapper.from_resolved_arg`.  Everything else
+    capgen routes through ``source == 'constituent'`` -- tendencies
+    (``tendency_of_*``, stored in ``vars_layer_tend`` under the BASE
+    name's index), ``index_of_*`` integers, the framework arrays/counts,
+    and the register-phase properties array -- is not.
+
+    The prefixes and the framework-name set are imported from capgen
+    rather than duplicated: if capgen renames them this raises at import
+    time instead of silently reclassifying every constituent arg.
+    """
+    from generator.suite_resolver import (
+        _TEND_PREFIX, _INDEX_PREFIX, _FRAMEWORK_CONST_STDS,
+    )
+    if getattr(arg, 'is_constituent_arg', False):
+        return False
+    if std_name in _FRAMEWORK_CONST_STDS:
+        return False
+    return not (std_name.startswith(_TEND_PREFIX)
+                or std_name.startswith(_INDEX_PREFIX))
+
+
 class _Source:
     """Stand-in for ``Var.source`` from original capgen.
 
@@ -114,8 +140,18 @@ class _VarWrapper:
         cls,
         entry,
         intrinsic_subnames: Optional[List[str]] = None,
+        intent: str = '',
     ) -> '_VarWrapper':
-        """Build a wrapper for a host-dict entry (``HostVarEntry``)."""
+        """Build a wrapper for a host-dict entry (``HostVarEntry``).
+
+        *intent* is ``''`` for host_dict lookups (a host variable has no
+        intent of its own).  The dimension-variable path in
+        :class:`_cap_database.CapDatabase` passes ``'in'``: capgen tracks
+        dimension references on ``ResolvedArg.used_dim_std_names``
+        instead of emitting a call-list arg for them, but original capgen
+        put those variables on the group call list, where
+        ``write_init_files`` reads them as inputs.
+        """
         # Control variables have module_name=None → ptype = 'API'
         # (capgen's framework-injected vars; cam-sima's
         # write_init_files filter ``ptype != 'host'`` includes them).
@@ -192,7 +228,7 @@ class _VarWrapper:
         wrapper = cls(
             standard_name      = entry.standard_name,
             local_name         = leaf_name,
-            intent             = '',
+            intent             = intent,
             protected          = bool(entry.protected),
             advected           = False,
             constituent        = False,
@@ -211,7 +247,7 @@ class _VarWrapper:
             wrapper._inner = cls(
                 standard_name      = entry.standard_name,
                 local_name         = root_name,
-                intent             = '',
+                intent             = intent,
                 protected          = bool(entry.protected),
                 advected           = False,
                 constituent        = False,
@@ -259,12 +295,34 @@ class _VarWrapper:
             or bool(arg.is_constituent)
             or bool(arg.is_constituent_arg)
         )
+        # ``advected`` is a STRICT subset of ``constituent``.
+        # write_init_files excludes advected vars from phys_var_stdnames
+        # because the runtime resolves them through the constituent
+        # object -- ``const_get_index(std_name)``.  That lookup only
+        # succeeds for a base constituent: a tendency lives in
+        # ``vars_layer_tend`` keyed by the BASE name's index, an
+        # ``index_of_*`` integer and the framework arrays/counts are not
+        # constituents at all, and the register-phase properties array is
+        # framework-internal.  Reporting those as advected drops them
+        # from phys_var_stdnames with no build-time error, and the
+        # runtime initialization check then aborts with "Required
+        # variables missing from registered list of input variables".
+        #
+        # Known imprecision: a base constituent flagged ``constituent``
+        # but not ``advected`` is still reported advected here, because
+        # ResolvedArg does not carry the metadata's ``advected`` flag
+        # (only the merged ``is_constituent``).  That direction is the
+        # safe one -- the variable is in the runtime constituent table
+        # either way, it just loses its registered IC-file input names.
+        # Exposing ``advected`` on ResolvedArg would let this be exact.
+        is_advected = is_constituent and _is_base_constituent_name(
+            arg.standard_name, arg)
         return cls(
             standard_name      = arg.standard_name,
             local_name         = arg.scheme_local_name,
             intent             = arg.intent,
             protected          = False,
-            advected           = is_constituent,
+            advected           = is_advected,
             constituent        = is_constituent,
             dimensions         = list(arg.scheme_dimensions),
             source             = source,

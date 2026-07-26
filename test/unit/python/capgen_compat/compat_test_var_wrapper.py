@@ -32,17 +32,18 @@ class _StubResolvedArg:
     def __init__(self, standard_name='pi', scheme_local_name='con_pi',
                  intent='in', source='host', call_expr='con_pi',
                  module_name='scm_physical_constants',
-                 scheme_dimensions=(),
+                 scheme_dimensions=(), used_dim_std_names=(),
                  is_constituent=False, is_constituent_arg=False):
-        self.standard_name      = standard_name
-        self.scheme_local_name  = scheme_local_name
-        self.intent             = intent
-        self.source             = source
-        self.call_expr          = call_expr
-        self._module_name       = module_name
-        self.scheme_dimensions  = list(scheme_dimensions)
-        self.is_constituent     = is_constituent
-        self.is_constituent_arg = is_constituent_arg
+        self.standard_name       = standard_name
+        self.scheme_local_name   = scheme_local_name
+        self.intent              = intent
+        self.source              = source
+        self.call_expr           = call_expr
+        self._module_name        = module_name
+        self.scheme_dimensions   = list(scheme_dimensions)
+        self.used_dim_std_names  = set(used_dim_std_names)
+        self.is_constituent      = is_constituent
+        self.is_constituent_arg  = is_constituent_arg
 
     @property
     def module_name(self):
@@ -97,9 +98,71 @@ class TestFromResolvedArg(unittest.TestCase):
 
     def test_constituent_classification(self):
         w = _VarWrapper.from_resolved_arg(
-            _StubResolvedArg(is_constituent=True))
+            _StubResolvedArg(standard_name='cloud_liquid_water_mixing_ratio',
+                             is_constituent=True))
         self.assertTrue(w.get_prop_value('advected'))
         self.assertTrue(w.get_prop_value('constituent'))
+
+    def test_non_constituent_is_neither(self):
+        w = _VarWrapper.from_resolved_arg(_StubResolvedArg(source='host'))
+        self.assertFalse(w.get_prop_value('advected'))
+        self.assertFalse(w.get_prop_value('constituent'))
+
+
+class TestAdvectedIsSubsetOfConstituent(unittest.TestCase):
+    """``advected`` marks only what ``const_get_index(std_name)`` resolves.
+
+    write_init_files drops advected vars from phys_var_stdnames on the
+    grounds that the runtime reaches them through the constituent object.
+    That holds for a base species only; a tendency lives in
+    ``vars_layer_tend`` under the BASE name's index, so reporting it
+    advected drops it from phys_var_stdnames and the runtime
+    initialization check aborts on it.
+    """
+
+    def _flags(self, **kwargs):
+        kwargs.setdefault('source', 'constituent')
+        w = _VarWrapper.from_resolved_arg(_StubResolvedArg(**kwargs))
+        return w.get_prop_value('advected'), w.get_prop_value('constituent')
+
+    def test_base_constituent_is_advected(self):
+        advected, constituent = self._flags(
+            standard_name='cloud_liquid_water_mixing_ratio')
+        self.assertTrue(advected)
+        self.assertTrue(constituent)
+
+    def test_tendency_is_constituent_but_not_advected(self):
+        advected, constituent = self._flags(
+            standard_name='tendency_of_cloud_liquid_water_mixing_ratio')
+        self.assertFalse(advected)
+        self.assertTrue(constituent)
+
+    def test_index_var_is_not_advected(self):
+        advected, constituent = self._flags(
+            standard_name='index_of_cloud_liquid_water_mixing_ratio')
+        self.assertFalse(advected)
+        self.assertTrue(constituent)
+
+    def test_framework_array_is_not_advected(self):
+        advected, constituent = self._flags(standard_name='ccpp_constituents')
+        self.assertFalse(advected)
+        self.assertTrue(constituent)
+
+    def test_register_properties_array_is_not_advected(self):
+        advected, constituent = self._flags(
+            standard_name='dynamic_constituents_for_my_scheme',
+            is_constituent_arg=True)
+        self.assertFalse(advected)
+        self.assertTrue(constituent)
+
+    def test_inferred_consumer_tendency_not_advected(self):
+        # Rule (b): an unflagged intent=in consumer of a tendency still
+        # resolves to source='constituent' with is_constituent False.
+        advected, constituent = self._flags(
+            standard_name='tendency_of_water_vapor_mixing_ratio',
+            intent='in', is_constituent=False)
+        self.assertFalse(advected)
+        self.assertTrue(constituent)
 
     def test_call_string_returns_resolved_expr(self):
         w = _VarWrapper.from_resolved_arg(

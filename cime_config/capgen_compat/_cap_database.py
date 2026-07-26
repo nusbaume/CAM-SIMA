@@ -56,18 +56,53 @@ class _HostDict:
         self._cache[key] = wrapper
         return wrapper
 
+    def find_dimension_variable(self, stdname: str) -> Optional[_VarWrapper]:
+        """Return an ``intent='in'`` wrapper for a *registry* dimension var.
+
+        Used for the ``ResolvedArg.used_dim_std_names`` entries that
+        :class:`CapDatabase` surfaces on the call list (see
+        :meth:`CapDatabase._collect_dims`).  Returns ``None`` unless the
+        variable resolves to a registry-allocated module variable
+        (``ptype == 'module'``).
+
+        The two rejected categories are deliberate:
+
+        * ``ptype == 'host'`` — host-structure dims such as
+          ``horizontal_dimension`` / ``vertical_layer_dimension``.
+          ``write_init_files._find_and_add_host_variable`` drops these
+          anyway, so surfacing them would be a no-op at best.
+        * ``ptype == 'API'`` — control vars (``horizontal_loop_begin`` /
+          ``horizontal_loop_end``).  Under original capgen these were
+          plain host loop variables (``ptype == 'host'``) and were
+          filtered out; CAM-SIMA only declares them in a ``type =
+          control`` table because capgen requires it.  They are not
+          registry variables and must not reach ``phys_var_stdnames``.
+        """
+        wrapper = self.find_variable(stdname)
+        if wrapper is None or wrapper.source.ptype != 'module':
+            return None
+        entry = self._host_dict.get(stdname.lower())
+        return _VarWrapper.from_host_entry(entry, intent='in')
+
 
 class _CallList:
-    """Per-phase iterable of scheme-arg wrappers."""
+    """Per-phase iterable of scheme-arg wrappers.
 
-    def __init__(self, args: List):
+    *dim_vars* are already-built wrappers for the registry dimension
+    variables the phase's args reference; they follow the scheme args in
+    the returned list.
+    """
+
+    def __init__(self, args: List, dim_vars: Optional[List] = None):
         self._args = list(args)
+        self._dim_vars = list(dim_vars or [])
         self._wrappers: Optional[List[_VarWrapper]] = None
 
     def variable_list(self) -> List[_VarWrapper]:
         if self._wrappers is None:
             self._wrappers = [_VarWrapper.from_resolved_arg(a)
                               for a in self._args]
+            self._wrappers.extend(self._dim_vars)
         return list(self._wrappers)
 
 
@@ -105,18 +140,22 @@ class CapDatabase:
         # (scheme_name, phase, standard_name).
         seen: Set = set()
         per_phase: Dict[str, List] = OrderedDict()
+        per_phase_dims: Dict[str, List[str]] = OrderedDict()
         for sr in suite_resolutions:
             for group in sr.groups:
                 for phase, items in group.phase_calls.items():
                     for rc in _walk_calls(items):
-                        self._collect(rc, per_phase, seen)
+                        self._collect(rc, per_phase, seen, per_phase_dims)
             # Suite-level <init>/<final> hooks count as calls too.
             if getattr(sr, 'suite_init_call', None) is not None:
-                self._collect(sr.suite_init_call, per_phase, seen)
+                self._collect(sr.suite_init_call, per_phase, seen,
+                              per_phase_dims)
             if getattr(sr, 'suite_final_call', None) is not None:
-                self._collect(sr.suite_final_call, per_phase, seen)
+                self._collect(sr.suite_final_call, per_phase, seen,
+                              per_phase_dims)
 
         self._per_phase = per_phase
+        self._per_phase_dims = per_phase_dims
 
     # ResolvedArg.source values capgen emits.  Original capgen's
     # ``call_list(phase).variable_list()`` contract is *host-facing*:
@@ -132,9 +171,12 @@ class CapDatabase:
     _SUITE_INTERNAL_SOURCES = frozenset({'suite'})
 
     @classmethod
-    def _collect(cls, rc, per_phase: Dict[str, List], seen: Set) -> None:
+    def _collect(cls, rc, per_phase: Dict[str, List], seen: Set,
+                 per_phase_dims: Optional[Dict[str, List[str]]] = None) -> None:
         phase = rc.phase
         bucket = per_phase.setdefault(phase, [])
+        dim_bucket = (None if per_phase_dims is None
+                      else per_phase_dims.setdefault(phase, []))
         for arg in rc.args:
             if getattr(arg, 'source', None) in cls._SUITE_INTERNAL_SOURCES:
                 continue
@@ -143,6 +185,44 @@ class CapDatabase:
                 continue
             seen.add(key)
             bucket.append(arg)
+            cls._collect_dims(arg, dim_bucket)
+
+    @staticmethod
+    def _collect_dims(arg, dim_bucket: Optional[List[str]]) -> None:
+        """Record the dimension std names *arg* references, in order.
+
+        Capgen tracks dimension variables on
+        ``ResolvedArg.used_dim_std_names`` and does not emit a call-list
+        arg for them.  Original capgen instead added every dimension
+        variable to the group's call list, which is where
+        ``write_init_files.gather_ccpp_req_vars`` picks up registry
+        variables that appear *only* as someone else's dimension (e.g. a
+        registry ``band_number`` used as the second dim of a scheme arg).
+        Without this, such a variable is silently absent from
+        ``phys_var_stdnames`` — no build error, but the runtime
+        initialization check cannot resolve it.
+
+        ``used_dim_std_names`` is not restricted to dimensions: it also
+        carries subscript *index* references for array-of-DDT element
+        resolution (``index_of_potential_temperature`` and friends).
+        Original capgen did not register those, so intersect with the
+        arg's declared dimensions — the names that are genuinely an axis
+        of the variable.  Dimension entries may be ranges
+        (``ccpp_constant_one:vertical_layer_dimension``), so split them.
+
+        Which of the surviving names actually reach the call list is
+        decided later by :meth:`_HostDict.find_dimension_variable`.
+        """
+        if dim_bucket is None:
+            return
+        used = getattr(arg, 'used_dim_std_names', None) or ()
+        if not used:
+            return
+        for dim in getattr(arg, 'scheme_dimensions', None) or ():
+            for token in str(dim).split(':'):
+                token = token.strip()
+                if token in used and token not in dim_bucket:
+                    dim_bucket.append(token)
 
     def host_model_dict(self) -> _HostDict:
         return self._host
@@ -160,7 +240,12 @@ class CapDatabase:
         args = self._per_phase.get(canonical, [])
         if not args:
             return _EMPTY_CALL_LIST
-        return _CallList(args)
+        dim_vars = []
+        for std_name in self._per_phase_dims.get(canonical, []):
+            wrapper = self._host.find_dimension_variable(std_name)
+            if wrapper is not None:
+                dim_vars.append(wrapper)
+        return _CallList(args, dim_vars)
 
     def __repr__(self) -> str:
         sizes = {p: len(v) for p, v in self._per_phase.items()}

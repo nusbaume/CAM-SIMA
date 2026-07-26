@@ -108,6 +108,108 @@ class TestCallList(unittest.TestCase):
         self.assertEqual(stds, {'from_host', 'from_control', 'from_const'})
 
 
+class TestCallListDimensionVariables(unittest.TestCase):
+    """Registry variables that appear only as another variable's dimension.
+
+    Capgen records them on ``ResolvedArg.used_dim_std_names`` and emits no
+    call-list arg; original capgen put them on the group call list, which
+    is where ``write_init_files`` finds the registry variables it must
+    register.  The facade restores that, but only for registry
+    (``ptype == 'module'``) variables.
+    """
+
+    def _db(self, host_entries, arg):
+        rc = _StubResolvedCall('s', 'run', [arg])
+        sr = _StubSuiteResolution(
+            's', [_StubResolvedGroup('g', {'run': [rc]})])
+        return CapDatabase(_hd(*host_entries), [sr])
+
+    def _stds(self, db):
+        return {w.get_prop_value('standard_name')
+                for w in db.call_list('run').variable_list()}
+
+    def _registry_entry(self, standard_name):
+        # ptype == 'module' requires the module name to be registered as
+        # a registry-generated table (the capgen_compat:original_type
+        # marker path).
+        from metadata_table import MODULE_ORIGIN_TABLE_NAMES
+        MODULE_ORIGIN_TABLE_NAMES.add('physics_types')
+        self.addCleanup(MODULE_ORIGIN_TABLE_NAMES.discard, 'physics_types')
+        return _StubHostEntry(standard_name=standard_name,
+                              local_name='band_no',
+                              access_path='band_no',
+                              module_name='physics_types')
+
+    def test_registry_dimension_var_on_call_list(self):
+        arg = _StubResolvedArg(
+            standard_name='air_pressure_at_sea_level',
+            scheme_dimensions=['horizontal_dimension', 'band_number'],
+            used_dim_std_names={'horizontal_dimension', 'band_number'})
+        db = self._db([self._registry_entry('band_number')], arg)
+        self.assertIn('band_number', self._stds(db))
+
+    def test_registry_dimension_var_is_an_input(self):
+        arg = _StubResolvedArg(
+            standard_name='air_pressure_at_sea_level',
+            scheme_dimensions=['band_number'],
+            used_dim_std_names={'band_number'})
+        db = self._db([self._registry_entry('band_number')], arg)
+        dim = [w for w in db.call_list('run').variable_list()
+               if w.get_prop_value('standard_name') == 'band_number'][0]
+        self.assertEqual(dim.get_prop_value('intent'), 'in')
+
+    def test_host_structure_dimension_not_on_call_list(self):
+        # ptype == 'host': write_init_files skips these anyway.
+        entry = _StubHostEntry(standard_name='horizontal_dimension',
+                               module_name='simple_host')
+        arg = _StubResolvedArg(
+            standard_name='air_pressure_at_sea_level',
+            scheme_dimensions=['horizontal_dimension'],
+            used_dim_std_names={'horizontal_dimension'})
+        db = self._db([entry], arg)
+        self.assertNotIn('horizontal_dimension', self._stds(db))
+
+    def test_control_dimension_not_on_call_list(self):
+        # module_name=None → ptype 'API'.  horizontal_loop_begin/end are
+        # control vars only because capgen requires the table type; they
+        # are not registry variables.
+        entry = _StubHostEntry(standard_name='horizontal_loop_begin',
+                               module_name=None)
+        arg = _StubResolvedArg(
+            standard_name='air_pressure_at_sea_level',
+            scheme_dimensions=['horizontal_loop_begin:horizontal_loop_end'],
+            used_dim_std_names={'horizontal_loop_begin'})
+        db = self._db([entry], arg)
+        self.assertNotIn('horizontal_loop_begin', self._stds(db))
+
+    def test_subscript_index_not_on_call_list(self):
+        # used_dim_std_names also carries array-of-DDT element indices.
+        # They are not dimensions of the arg, so they must not register.
+        arg = _StubResolvedArg(
+            standard_name='air_pressure_at_sea_level',
+            scheme_dimensions=['horizontal_dimension'],
+            used_dim_std_names={'index_of_potential_temperature'})
+        db = self._db(
+            [self._registry_entry('index_of_potential_temperature')], arg)
+        self.assertNotIn('index_of_potential_temperature', self._stds(db))
+
+    def test_dimension_var_deduped_across_args(self):
+        rc = _StubResolvedCall('s', 'run', [
+            _StubResolvedArg(standard_name='a',
+                             scheme_dimensions=['band_number'],
+                             used_dim_std_names={'band_number'}),
+            _StubResolvedArg(standard_name='b',
+                             scheme_dimensions=['band_number'],
+                             used_dim_std_names={'band_number'}),
+        ])
+        sr = _StubSuiteResolution(
+            's', [_StubResolvedGroup('g', {'run': [rc]})])
+        db = CapDatabase(_hd(self._registry_entry('band_number')), [sr])
+        stds = [w.get_prop_value('standard_name')
+                for w in db.call_list('run').variable_list()]
+        self.assertEqual(stds.count('band_number'), 1)
+
+
 class TestPhaseAlias(unittest.TestCase):
 
     def test_original_capgen_aliases(self):
