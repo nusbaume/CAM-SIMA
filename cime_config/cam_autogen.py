@@ -47,6 +47,12 @@ sys.path.append(_REG_GEN_DIR)
 from generate_registry_data import gen_registry
 from write_init_files import write_init_files
 
+# Framework Fortran sources that CAM-SIMA's host code compiles in every
+# configuration, independent of the suites being built.  See
+# cime_config/host_framework_deps.py for the rationale and the list.
+from host_framework_deps import host_framework_sources
+from host_framework_deps import HostFrameworkDepsError
+
 ###############################################################################
 
 class CamAutoGenError(ValueError):
@@ -756,6 +762,18 @@ def generate_physics_suites(build_cache, preproc_defs, host_name,
         ufiles_str = datatable_report(cap_output_file, request, ";")
         utility_files = ufiles_str.split(';')
         _update_genccpp_dir(utility_files, genccpp_dir)
+        # capgen lists the framework sources in <utility_files> only when a
+        # suite touches constituent state -- correct for capgen, which sees
+        # only metadata, but CAM-SIMA host code USEs ccpp_constituent_prop_mod
+        # in every configuration.  Add them here so a constituent-free suite
+        # still builds.  Same destination as the utility files above, so when
+        # capgen does list them the two writes are identical and no duplicate
+        # module is produced.
+        try:
+            _update_genccpp_dir(host_framework_sources(), genccpp_dir)
+        except HostFrameworkDepsError as derr:
+            raise CamAutoGenError(str(derr)) from derr
+        # end try
         request = DatatableReport("dependencies")
         dep_str = datatable_report(cap_output_file, request, ";")
         if len(dep_str) > 0:
