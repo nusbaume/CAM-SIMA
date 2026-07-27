@@ -1,7 +1,7 @@
 [submodule "ccpp-framework"]
         path          = ccpp_framework
 	url           = https://github.com/NCAR/ccpp-framework
-        fxtag         = ed284a8a4a6507f8c684839dbe2a2e2770b3a09d
+        fxtag         = e1f90d1150299974d246db328a489ecb2a8223a0
         fxrequired    = AlwaysRequired
         fxDONOTUSEurl = https://github.com/NCAR/ccpp-framework
 [submodule "history"]
