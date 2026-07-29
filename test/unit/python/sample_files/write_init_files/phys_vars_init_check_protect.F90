@@ -70,13 +70,13 @@ module phys_vars_init_check_protect
 
    ! Array indicating whether or not variable is protected:
    logical, public, protected :: protected_vars(phys_var_num)= (/ &
-      .true., &
-      .false. /)
+      .false., &
+      .true. /)
 
    ! Variable state (UNINITIALIZED, INTIIALIZED, PARAM or READ_FROM_FILE):
    integer, public, protected :: initialized_vars(phys_var_num)= (/ &
-      PARAM, &
-      UNINITIALIZED /)
+      UNINITIALIZED, &
+      PARAM /)
 
 
 contains

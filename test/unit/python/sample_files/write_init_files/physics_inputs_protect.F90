@@ -147,10 +147,10 @@ contains
 
                   select case (trim(phys_var_stdnames(name_idx)))
                      case ('potential_temperature')
-                        call endrun('Cannot read theta from file'//', theta is a protected variable')
+                        call read_field(file, 'potential_temperature', input_var_names(:,name_idx), 'lev', timestep, theta)
 
                      case ('air_pressure_at_sea_level')
-                        call read_field(file, 'air_pressure_at_sea_level', input_var_names(:,name_idx), timestep, slp)
+                        call endrun('Cannot read slp from file'//', slp is a protected variable')
 
                   end select !read variables
                end select !special indices

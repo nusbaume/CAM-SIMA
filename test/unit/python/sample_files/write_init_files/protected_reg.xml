@@ -4,13 +4,13 @@
   <file name="physics_types_protected" type="module">
     <use module="ccpp_kinds" reference="kind_phys"/>
     <variable local_name="theta" standard_name="potential_temperature"
-              units="K" type="real" kind="kind_phys"  allocatable="pointer"
-              access="protected">
+              units="K" type="real" kind="kind_phys"  allocatable="pointer">
       <dimensions>horizontal_dimension vertical_layer_dimension</dimensions>
       <ic_file_input_names>theta pot_temp</ic_file_input_names>
     </variable>
     <variable local_name="slp" standard_name="air_pressure_at_sea_level"
-              units="Pa" type="real" kind="kind_phys"  allocatable="pointer">
+              units="Pa" type="real" kind="kind_phys"  allocatable="pointer"
+              access="protected">
       <dimensions>horizontal_dimension</dimensions>
       <ic_file_input_names>psl sea_lev_pres</ic_file_input_names>
     </variable>
