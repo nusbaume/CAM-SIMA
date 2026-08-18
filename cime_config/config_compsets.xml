@@ -48,11 +48,6 @@
   </compset>
 
   <compset>
-    <alias>FCAM4</alias>
-    <lname>2000_CAM40_SLND_SICE_SOCN_SROF_SGLC_SWAV</lname>
-  </compset>
-
-  <compset>
     <alias>F1850_C4</alias>
     <lname>1850_CAM40_CLM60%SP_CICE%PRES_DOCN%DOM_MOSART_SGLC_SWAV</lname>
   </compset>
@@ -115,29 +110,29 @@
 
     <entry id="RUN_STARTDATE">
       <values match="last">
-	<value  compset="CAM[456]0%SCAM">1997-06-18</value>
-	<value  compset="HIST_CAM">1979-01-01</value>
-	<value  compset="HIST_CAM60%WCTS_CLM50%BGC-CROP">1950-01-01</value>
+        <value  compset="CAM[456]0%SCAM">1997-06-18</value>
+        <value  compset="HIST_CAM">1979-01-01</value>
+        <value  compset="HIST_CAM60%WCTS_CLM50%BGC-CROP">1950-01-01</value>
         <value  compset="HIST_CAM40%WX">2000-01-01</value>
-	<value  compset="HIST_CAM60%WCMD">2005-01-01</value>
-	<value  compset="HIST_CAM60%WCSC">1850-01-01</value>
-	<value  compset="HIST_CAM60%CCTS">1995-01-01</value>
-	<value  compset="HIST_CAM60%CVBSX">1995-01-01</value>
-	<value  compset="HIST_CAM60%CFIRE">1995-01-01</value>
-	<value  compset="RCP[2468]_CAM\d+">2005-01-01</value>
- 	<value  compset="_CAM.*%SDYN"                   >2005-01-01</value>
- 	<value  compset="_CAM.*%SDYN" grid="a%0.47x0.63">2010-01-01</value>
-	<value  compset="_CAM60%(WCCM|WCTS|WXIE).*%SDYN">1980-01-01</value>
- 	<value  compset="_CAM40%WX.*%SDYN">2000-01-01</value>
+        <value  compset="HIST_CAM60%WCMD">2005-01-01</value>
+        <value  compset="HIST_CAM60%WCSC">1850-01-01</value>
+        <value  compset="HIST_CAM60%CCTS">1995-01-01</value>
+        <value  compset="HIST_CAM60%CVBSX">1995-01-01</value>
+        <value  compset="HIST_CAM60%CFIRE">1995-01-01</value>
+        <value  compset="RCP[2468]_CAM\d+">2005-01-01</value>
+        <value  compset="_CAM.*%SDYN"                   >2005-01-01</value>
+        <value  compset="_CAM.*%SDYN" grid="a%0.47x0.63">2010-01-01</value>
+        <value  compset="_CAM60%(WCCM|WCTS|WXIE).*%SDYN">1980-01-01</value>
+        <value  compset="_CAM40%WX.*%SDYN">2000-01-01</value>
 
-	<value  compset="C2R4_CAM">2004-01-01</value>
-	<value  compset="C2R[68]_CAM">1950-01-01</value>
+        <value  compset="C2R4_CAM">2004-01-01</value>
+        <value  compset="C2R[68]_CAM">1950-01-01</value>
       </values>
     </entry>
 
     <entry id="START_TOD">
       <values match="first">
-	<value  compset="CAM[456]0%SCAM">84585</value>
+        <value  compset="CAM[456]0%SCAM">84585</value>
       </values>
     </entry>
 
@@ -157,8 +152,8 @@
     <!-- Overrides for Specified Dynamics -->
     <entry id="CALENDAR">
       <values match="first">
-	<value  compset="%SDYN">GREGORIAN</value>
- 	<value  compset="HIST_CAM\d0%WX">GREGORIAN</value>
+        <value  compset="%SDYN">GREGORIAN</value>
+        <value  compset="HIST_CAM\d0%WX">GREGORIAN</value>
      </values>
     </entry>
     <entry id="SSTICE_DATA_FILENAME">
@@ -225,19 +220,19 @@
 
     <entry id="PTS_MODE">
       <values match="first">
-	<value compset="(CAM[456]0%SCAM)">TRUE</value>
+        <value compset="(CAM[456]0%SCAM)">TRUE</value>
       </values>
     </entry>
 
     <entry id="PTS_LAT">
       <values match="first">
-	<value compset="(CAM[456]0%SCAM)">36.6</value>
+        <value compset="(CAM[456]0%SCAM)">36.6</value>
       </values>
     </entry>
 
     <entry id="PTS_LON">
       <values match="first">
-	<value compset="(CAM[456]0%SCAM)">262.5</value>
+        <value compset="(CAM[456]0%SCAM)">262.5</value>
       </values>
     </entry>
 
