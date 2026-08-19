@@ -97,8 +97,8 @@
         fxDONOTUSEurl = https://github.com/ESCOMP/RTM
 [submodule "share"]
         path          = share
-        url           = https://github.com/ESCOMP/CESM_share
-        fxtag         = share1.1.21
+        url           = https://github.com/nusbaume/CESM_share
+        fxtag         = 42a196aee97990c58ae2da0a82f831a783e3f5f5
         fxrequired    = ToplevelRequired
 	fxDONOTUSEurl = https://github.com/ESCOMP/CESM_share
 [submodule "tools/CUPiD"]
