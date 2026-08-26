@@ -2288,50 +2288,6 @@
       <initial_value>0._kind_phys</initial_value>
       <ic_file_input_names>ALST pbuf_ALST</ic_file_input_names>
     </variable>
-    <variable local_name="strat_ice_cldfrc_in"
-              standard_name="stratiform_cloud_ice_area_fraction"
-              units="fraction" type="real" kind="kind_phys"
-              allocatable="allocatable">
-      <dimensions>horizontal_dimension vertical_layer_dimension</dimensions>
-      <initial_value>0._kind_phys</initial_value>
-      <ic_file_input_names>AIST pbuf_AIST</ic_file_input_names>
-    </variable>
-    <variable local_name="qsatfac_in"
-              standard_name="subgrid_cloud_water_saturation_scaling_factor_for_microphysics"
-              units="1" type="real" kind="kind_phys"
-              allocatable="allocatable">
-      <dimensions>horizontal_dimension vertical_layer_dimension</dimensions>
-      <initial_value>1._kind_phys</initial_value>
-      <ic_file_input_names>QSATFAC pbuf_QSATFAC</ic_file_input_names>
-    </variable>
-    <variable local_name="naai_in"
-              standard_name="tendency_of_mass_number_concentration_of_activated_ice_nuclei"
-              units="kg-1 s-1" type="real" kind="kind_phys"
-              allocatable="allocatable">
-      <dimensions>horizontal_dimension vertical_layer_dimension</dimensions>
-      <ic_file_input_names>NAAI pbuf_NAAI</ic_file_input_names>
-    </variable>
-    <variable local_name="npccn_in"
-              standard_name="tendency_of_mass_number_concentration_of_activated_cloud_condensation_nuclei"
-              units="kg-1 s-1" type="real" kind="kind_phys"
-              allocatable="allocatable">
-      <dimensions>horizontal_dimension vertical_layer_dimension</dimensions>
-      <ic_file_input_names>NPCCN pbuf_NPCCN</ic_file_input_names>
-    </variable>
-    <variable local_name="rndst_in"
-              standard_name="dust_radii_by_size_bin"
-              units="m" type="real" kind="kind_phys"
-              allocatable="allocatable">
-      <dimensions>horizontal_dimension vertical_layer_dimension dust_size_bin_dimension</dimensions>
-      <ic_file_input_names>RNDST pbuf_RNDST</ic_file_input_names>
-    </variable>
-    <variable local_name="nacon_in"
-              standard_name="dust_number_concentration_by_size_bin_for_contact_freezing"
-              units="m-3" type="real" kind="kind_phys"
-              allocatable="allocatable">
-      <dimensions>horizontal_dimension vertical_layer_dimension dust_size_bin_dimension</dimensions>
-      <ic_file_input_names>NACON pbuf_NACON</ic_file_input_names>
-    </variable>
     <variable local_name="rei"
               standard_name="effective_radius_of_stratiform_cloud_ice_crystal"
               units="um" type="real" kind="kind_phys"
