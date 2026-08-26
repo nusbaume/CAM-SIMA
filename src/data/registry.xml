@@ -47,18 +47,6 @@
     <use module="physconst" reference="mwdry"/>
     <use module="physconst" reference="zvir"/>
 
-    <!-- Dimensions -->
-    <variable local_name="ndust"
-              standard_name="dust_size_bin_dimension"
-              units="count" type="integer" allocatable="parameter">
-      <long_name>number of dust size bins used in aerosol model</long_name>
-      <initial_value>4</initial_value>
-      <!-- this is not runtime configurable, and
-           not even easily compile-time configurable, because the assumption that
-           there are four dust bins is deeply embedded in the microphysics and
-           coupling to the land model (see dstdry1/2/3/4, dstwet1/2/3/4) -->
-    </variable>
-
     <!-- State variables -->
     <variable local_name="ps" standard_name="surface_air_pressure"
               units="Pa" type="real" kind="kind_phys"
@@ -666,27 +654,27 @@
     <variable local_name="numice"
               standard_name="mass_number_concentration_of_cloud_ice_water_crystals_in_moist_air_and_condensed_water"
               units="kg kg-1" type="real" constituent="true">
-      <long_name>mass number concentration of Cloud ice mass mixing ratio with respect to moist air plus all airborne condensates</long_name>
+      <long_name>mass number concentration of cloud ice water crystals with respect to mass of moist air plus all airborne condensates</long_name>
       <dimensions>horizontal_dimension vertical_layer_dimension</dimensions>
       <ic_file_input_names>NUMICE cnst_NUMICE</ic_file_input_names>
     </variable>
     <variable local_name="numrai"
               standard_name="mass_number_concentration_of_rain_drops_in_moist_air_and_condensed_water"
               units="kg kg-1" type="real" constituent="true">
-      <long_name>mass number concentration of rain mass mixing ratio with respect to moist air plus all airborne condensates</long_name>
+      <long_name>mass number concentration of rain drops with respect to mass of moist air plus all airborne condensates</long_name>
       <dimensions>horizontal_dimension vertical_layer_dimension</dimensions>
       <ic_file_input_names>NUMRAI cnst_NUMRAI</ic_file_input_names>
     </variable>
     <variable local_name="numsno"
               standard_name="mass_number_concentration_of_snow_crystals_in_moist_air_and_condensed_water"
               units="kg kg-1" type="real" constituent="true">
-      <long_name>mass number concentration of snow mass mixing ratio with respect to moist air plus all airborne condensates</long_name>
+      <long_name>mass number concentration of snow crystals with respect to the mass of moist air plus all airborne condensates</long_name>
       <ic_file_input_names>NUMSNO cnst_NUMSNO</ic_file_input_names>
     </variable>
     <variable local_name="numgra"
               standard_name="mass_number_concentration_of_graupel_particles_in_moist_air_and_condensed_water"
               units="kg kg-1" type="real" constituent="true">
-      <long_name>mass number concentration of graupel mass mixing ratio with respect to moist air plus all airborne condensates</long_name>
+      <long_name>mass number concentration of graupel particles with respect to the mass of moist air plus all airborne condensates</long_name>
       <ic_file_input_names>NUMGRA cnst_NUMGRA</ic_file_input_names>
     </variable>
     <variable local_name="H2O"
@@ -2283,7 +2271,7 @@
       <initial_value>.false.</initial_value>
     </variable>
 
-    <!-- From phys_control-->
+    <!-- From CAM's phys_control module -->
     <variable local_name="relvar_in"
               standard_name="relative_variance_of_subgrid_cloud_condensate_distribution"
               units="1" type="real" kind="kind_phys"
@@ -2359,7 +2347,7 @@
       <!-- this is a distinct value from the ice effective radius from PUMAS itself -->
       <dimensions>horizontal_dimension vertical_layer_dimension</dimensions>
       <initial_value>0._kind_phys</initial_value>
-      <!--<ic_file_input_names>RE_ICE pbuf_RE_ICE</ic_file_input_names>-->
+      <ic_file_input_names>RE_ICE pbuf_RE_ICE</ic_file_input_names>
     </variable>
     <variable local_name="frzimm_in"
               standard_name="tendency_of_cloud_liquid_droplet_number_concentration_due_to_immersion_freezing"
@@ -2393,7 +2381,6 @@
       <initial_value>1._kind_phys</initial_value>
       <ic_file_input_names>accre_enhan pbuf_accre_enhan pbuf_ACCRE_ENHAN</ic_file_input_names>
 
-  <!-- CACNOTE: Not sure these snapshot cnst_XXX variables are the same ones - check more carefully -->
     </variable>
     <variable local_name="snowice_tend_external_in"
               standard_name="tendency_of_snow_mixing_ratio_wrt_moist_air_and_condensed_water_from_external_microphysics"
