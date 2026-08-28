@@ -100,6 +100,9 @@ class _VarWrapper:
         # ``'index_of_potential_temperature'``).  Driven from
         # ``HostVarEntry.local_subscript``; empty for bare host vars.
         '_local_subscript',
+        # ``_var_type`` is the Fortran type string (``'real'``,
+        # ``'integer'``, a DDT type name, ...).  Backs :meth:`is_ddt`.
+        '_var_type',
     )
 
     def __init__(
@@ -115,6 +118,7 @@ class _VarWrapper:
         call_expr: Optional[str],
         intrinsic_subnames: Optional[List[str]],
         local_subscript: Optional[List[str]] = None,
+        var_type: str = '',
     ):
         self._standard_name      = standard_name
         self._local_name         = local_name
@@ -127,6 +131,7 @@ class _VarWrapper:
         self._call_expr          = call_expr
         self._intrinsic_subnames = intrinsic_subnames
         self._local_subscript    = list(local_subscript or [])
+        self._var_type           = var_type or ''
         # ``_inner`` defaults to self -- factories that need a
         # distinct inner-wrapper layer reassign it.
         self._inner              = self
@@ -225,7 +230,15 @@ class _VarWrapper:
         # ``array_ref()`` and ``call_string()`` can synthesise the
         # sliced spelling original capgen used.
         local_subscript = list(getattr(entry, 'local_subscript', None) or [])
-        wrapper = cls(
+        # Original capgen represented a variable reached by walking into
+        # a DDT with a distinct class (``ddt_library.VarDDT``) rather
+        # than with a flag, and CAM-SIMA's ``write_init_files.py`` keys
+        # on that class.  Capgen collapses both cases into one
+        # ``HostVarEntry`` and records the walk in ``access_path``
+        # (``phys_state%theta`` vs. a bare ``pver``), so recover the
+        # distinction from the component separator.
+        wcls = _VarDDT if '%' in (entry.access_path or '') else cls
+        wrapper = wcls(
             standard_name      = entry.standard_name,
             local_name         = leaf_name,
             intent             = intent,
@@ -237,6 +250,7 @@ class _VarWrapper:
             call_expr          = entry.access_path,
             intrinsic_subnames = intrinsic_subnames,
             local_subscript    = local_subscript,
+            var_type           = entry.type,
         )
         # Pre-build the inner ``.var`` wrapper that reports the root
         # symbol as local_name.  If leaf == root (no DDT walk), reuse
@@ -244,7 +258,7 @@ class _VarWrapper:
         if root_name == leaf_name:
             wrapper._inner = wrapper
         else:
-            wrapper._inner = cls(
+            wrapper._inner = wcls(
                 standard_name      = entry.standard_name,
                 local_name         = root_name,
                 intent             = intent,
@@ -256,6 +270,7 @@ class _VarWrapper:
                 call_expr          = entry.access_path,
                 intrinsic_subnames = intrinsic_subnames,
                 local_subscript    = local_subscript,
+                var_type           = entry.type,
             )
             wrapper._inner._inner = wrapper._inner
         return wrapper
@@ -271,6 +286,7 @@ class _VarWrapper:
         }
         ptype = ptype_map.get(arg.source, 'API')
         source = _Source(ptype=ptype, name=arg.module_name)
+        host_entry = getattr(arg, 'host_entry', None)
         # write_init_files keys constituent handling -- skip USE-import and
         # skip the initial-conditions read; the constituents object supplies
         # the value at runtime -- on the call-list var's ``advected`` /
@@ -328,6 +344,11 @@ class _VarWrapper:
             source             = source,
             call_expr          = arg.call_expr,
             intrinsic_subnames = None,
+            # ResolvedArg carries no type of its own; the resolved
+            # host/control entry does.  ``None`` for suite-owned vars,
+            # which leaves ``is_ddt()`` undetermined (it raises rather
+            # than guessing -- see :meth:`is_ddt`).
+            var_type           = getattr(host_entry, 'type', '') or '',
         )
 
     # ------------------------------------------------------------------
@@ -363,6 +384,31 @@ class _VarWrapper:
     @property
     def source(self) -> _Source:
         return self._source
+
+    def is_ddt(self) -> bool:
+        """True iff this variable's own Fortran type is a DDT.
+
+        Mirrors original capgen's ``Var.is_ddt()``, which reported
+        "not a Fortran intrinsic".  Capgen's ``external:module:type``
+        spelling did not exist in original capgen and lands on the same
+        side of the test: an opaque type that CAM-SIMA can no more read
+        from an initial-conditions file than a DDT.
+
+        Raises ``ValueError`` when the backing capgen object carried no
+        type (a suite-owned call-list arg).  Original capgen would have
+        answered from the suite's own Var; guessing here would silently
+        mis-branch ``write_init_files``, so surface it instead.
+        """
+        if not self._var_type:
+            raise ValueError(
+                "capgen_compat _VarWrapper.is_ddt: no Fortran type "
+                "recorded for '{}'; the backing capgen object "
+                "(a suite-owned ResolvedArg) does not carry "
+                "one".format(self._standard_name)
+            )
+        from metadata.parse_tools import check_fortran_intrinsic
+        return check_fortran_intrinsic(self._var_type.strip(),
+                                       error=False) is None
 
     @property
     def var(self) -> '_VarWrapper':
@@ -494,3 +540,29 @@ class _VarWrapper:
                     self._standard_name, self._local_name,
                     self._source.ptype,
                 ))
+
+
+class _VarDDT(_VarWrapper):
+    """Stand-in for original capgen's ``ddt_library.VarDDT``.
+
+    Original capgen used a distinct class for a variable reached by
+    walking into a DDT (``phys_state%theta``), and CAM-SIMA's
+    ``write_init_files._find_and_add_host_variable`` keys on that class
+    to tell a DDT *component* apart from a whole-DDT variable.  Capgen
+    has one ``HostVarEntry`` for both, so
+    :meth:`_VarWrapper.from_host_entry` instantiates this subclass when
+    the entry's ``access_path`` shows a component walk.
+
+    Re-exported as ``VarDDT`` from the ``ddt_library`` flat shim.
+    """
+
+    __slots__ = ()
+
+    def is_ddt(self) -> bool:
+        """Always True, matching original ``VarDDT.is_ddt()``.
+
+        The parent class answers for the variable's own (leaf) type;
+        original capgen's ``VarDDT`` answered for the DDT chain it is
+        reached through, which is a DDT by construction.
+        """
+        return True

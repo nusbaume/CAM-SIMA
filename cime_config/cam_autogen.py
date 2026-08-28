@@ -486,8 +486,17 @@ def generate_registry(data_search, build_cache, atm_root, bldroot,
             reg_files_list += reg_file_list
         # End for
 
-        # Save build details in the build cache
-        reg_file_paths = [x.file_path for x in reg_file_list if x.file_path]
+        # Save build details in the build cache.
+        # gen_registry returns one File object per metadata TABLE, so a
+        # .meta file declaring N ccpp-table-properties blocks appears N
+        # times here (e.g. radiative_aerosol_definitions.meta: 9 DDTs +
+        # 1 module).  These paths become capgen's --host-files list, and
+        # capgen parses each entry, so a repeated file re-registers its
+        # host variables and capgen rejects them as duplicate standard
+        # names.  De-duplicate, preserving order (the registry lists
+        # DDT-defining files first, which capgen relies on).
+        reg_file_paths = list(dict.fromkeys(
+            x.file_path for x in reg_file_list if x.file_path))
         build_cache.update_registry(gen_reg_file, registry_files, dycore,
                                     reg_file_paths, ic_names, registry_constituents, vars_init_value)
     else:

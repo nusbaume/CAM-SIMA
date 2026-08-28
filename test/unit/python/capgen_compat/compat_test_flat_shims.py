@@ -67,6 +67,18 @@ class TestMetadataTableShim(unittest.TestCase):
         self.assertTrue(hasattr(mt, 'MetadataTable'))
 
 
+class TestDdtLibraryShim(unittest.TestCase):
+
+    def test_var_ddt_importable(self):
+        from ddt_library import VarDDT
+        from _var_wrapper import _VarDDT, _VarWrapper
+        self.assertIs(VarDDT, _VarDDT)
+        # ``write_init_files.py`` uses the class only in an isinstance
+        # test against a wrapper from the host dict, so it has to sit on
+        # the _VarWrapper branch of the hierarchy.
+        self.assertTrue(issubclass(VarDDT, _VarWrapper))
+
+
 class TestFortranToolsShim(unittest.TestCase):
 
     def test_fortran_writer_importable(self):

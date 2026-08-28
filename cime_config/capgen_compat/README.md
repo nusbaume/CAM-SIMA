@@ -55,6 +55,7 @@ Each retires by the end of the phased plan below.
 |---|---|---|
 | `ccpp_capgen.capgen(..., return_state=True)` returning `(host_dict, suite_resolutions)` | `_runner.capgen()` | Phase B (`write_init_files` migrates to `datatable.xml`) |
 | Field names on `HostVarEntry`, `ResolvedArg`, `SuiteResolution` (read by `_var_wrapper.py` and `_cap_database.py`) | The CapDatabase adapter | Phase B |
+| Original capgen's `Var` / `VarDDT` class split, read by `write_init_files.py` via `isinstance` to tell a DDT component from a whole-DDT variable.  Capgen has one `HostVarEntry` for both and records the walk in `access_path`; `_VarWrapper.from_host_entry` reconstructs the split. | `ddt_library.py` shim | Phase B |
 | Direct attribute access on `MetaVar` / `MetadataSection` (read by `generate_registry_data.py` via monkey-patched methods) | `metadata_table.py` monkey-patches | Phase C |
 | `metadata.metadata_table.parse_metadata_file` + `_parse_lines` (called by the parse-time rewriter) | `metadata_table.py` | Phase F |
 
@@ -77,6 +78,7 @@ the import entirely in favour of CLI invocation.
 | `metadata_table.py` | `parse_metadata_file`, `find_scheme_names`, `MetadataTable` (with monkey-patches — see below) |
 | `fortran_tools.py` | `FortranWriter` |
 | `var_props.py` | `is_horizontal_dimension`, `is_vertical_dimension`, the two dim-name lists |
+| `ddt_library.py` | `VarDDT` (the adapter's `_var_wrapper._VarDDT`) |
 
 ### CapDatabase adapter (~850 LOC)
 
@@ -90,7 +92,7 @@ capgen's internal Python state).
 |---|---|
 | `_runner.py` | `capgen(run_env, return_db=True)` entry point — wraps `ccpp_capgen.capgen` with `return_state=True` |
 | `_cap_database.py` | `CapDatabase` + `_HostDict` + `_CallList` |
-| `_var_wrapper.py` | `_VarWrapper` + `_Source` — the 14-method per-variable surface |
+| `_var_wrapper.py` | `_VarWrapper` + `_VarDDT` + `_Source` — the 14-method per-variable surface |
 | `_framework_env.py` | `CCPPFrameworkEnv` config-object stub |
 | `_state_machine.py` | `CCPP_STATE_MACH` with the canonical phase list |
 

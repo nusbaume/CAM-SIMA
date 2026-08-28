@@ -1133,7 +1133,7 @@ class WriteInitTest(unittest.TestCase):
                         os.path.join(_INIT_SAMPLES_DIR, "ddt_arg_scheme.meta")]
         cap_datafile = os.path.join(_TMP_DIR, "datatable_ddt_arg.xml")
 
-        host_files = [model_host, ddt_host_mod, out_meta]
+        host_files = [model_host, ddt_host_mod, out_meta, _CONTROL_VARS_META]
 
         # Setup write_init_files inputs:
         vic_name = "phys_vars_init_check_ddt_arg.F90"

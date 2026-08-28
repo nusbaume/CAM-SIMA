@@ -34,7 +34,7 @@ contains
       use shr_kind_mod,                 only: SHR_KIND_CS, SHR_KIND_CL, SHR_KIND_CX
       use physics_data,                 only: read_field, find_input_name_idx, no_exist_idx, init_mark_idx, prot_no_init_idx, const_idx
       use physics_data,                 only: read_constituent_dimensioned_field
-      use cam_ccpp_cap,                 only: ccpp_physics_suite_variables, cam_constituents_array, cam_model_const_properties
+      use cam_ccpp_cap,                 only: ccpp_physics_suite_variables, ccpp_constituents_array, ccpp_model_const_properties
       use ccpp_kinds,                   only: kind_phys
       use string_utils,                 only: to_lower, to_upper
       use phys_vars_init_check_ddt_arg, only: phys_var_num, phys_var_stdnames, input_var_names, std_name_len, is_initialized
@@ -85,7 +85,7 @@ contains
       logical                    :: use_init_variables
 
       ! Get constituent properties pointer:
-      const_props => cam_model_const_properties()
+      const_props => ccpp_model_const_properties()
 
       ! Initialize missing and non-initialized variables strings:
       missing_required_vars = ' '
@@ -176,7 +176,7 @@ contains
       end do !CCPP suites
 
       ! Read in constituent variables if not using init variables
-      field_data_ptr => cam_constituents_array()
+      field_data_ptr => ccpp_constituents_array()
 
       ! Iterate over all registered constituents
       do constituent_idx = 1, size(const_props)
@@ -239,7 +239,7 @@ contains
       use shr_kind_mod,                 only: SHR_KIND_CS, SHR_KIND_CL, SHR_KIND_CX
       use physics_data,                 only: check_field, find_input_name_idx, no_exist_idx, init_mark_idx, prot_no_init_idx, const_idx
       use physics_data,                 only: flush_check_field_verbose
-      use cam_ccpp_cap,                 only: ccpp_physics_suite_variables, cam_constituents_array, cam_model_const_properties
+      use cam_ccpp_cap,                 only: ccpp_physics_suite_variables, ccpp_constituents_array, ccpp_model_const_properties
       use cam_constituents,             only: const_get_index
       use ccpp_kinds,                   only: kind_phys
       use string_utils,                 only: to_lower, to_upper
@@ -373,8 +373,8 @@ contains
       end do !CCPP suites
 
       ! Check constituent variables
-      field_data_ptr => cam_constituents_array()
-      const_props => cam_model_const_properties()
+      field_data_ptr => ccpp_constituents_array()
+      const_props => ccpp_model_const_properties()
 
       do constituent_idx = 1, size(const_props)
          ! Check if constituent standard name in registered SIMA standard names list:

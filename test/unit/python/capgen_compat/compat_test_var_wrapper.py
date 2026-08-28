@@ -2,7 +2,7 @@
 
 import unittest
 
-from _var_wrapper import _VarWrapper
+from _var_wrapper import _VarDDT, _VarWrapper
 
 
 class _StubHostEntry:
@@ -88,6 +88,57 @@ class TestFromHostEntry(unittest.TestCase):
         w = _VarWrapper.from_host_entry(_StubHostEntry())
         with self.assertRaises(KeyError):
             w.get_prop_value('not_a_property')
+
+
+class TestIsDdt(unittest.TestCase):
+    """``write_init_files._find_and_add_host_variable`` skips a whole-DDT
+    host variable but keeps a field reached *through* a DDT.  It reads
+    the distinction as ``hvar.is_ddt() and not isinstance(hvar, VarDDT)``,
+    the original-capgen spelling this wrapper reconstructs.
+    """
+
+    def test_intrinsic_type_is_not_ddt(self):
+        w = _VarWrapper.from_host_entry(_StubHostEntry(type='real'))
+        self.assertFalse(w.is_ddt())
+        self.assertNotIsInstance(w, _VarDDT)
+
+    def test_ddt_type_is_ddt(self):
+        w = _VarWrapper.from_host_entry(_StubHostEntry(
+            standard_name='test_list_for_ddt_argument',
+            local_name='test_list', access_path='test_list',
+            type='test_list_t'))
+        self.assertTrue(w.is_ddt())
+        # A bare whole-DDT variable is NOT a component reference, so
+        # write_init_files skips it.
+        self.assertNotIsInstance(w, _VarDDT)
+
+    def test_ddt_component_is_var_ddt(self):
+        w = _VarWrapper.from_host_entry(_StubHostEntry(
+            standard_name='potential_temperature', local_name='theta',
+            access_path='phys_state%theta', type='real'))
+        self.assertIsInstance(w, _VarDDT)
+        # Original capgen's VarDDT.is_ddt() reported the DDT chain, not
+        # the leaf type.
+        self.assertTrue(w.is_ddt())
+
+    def test_external_type_is_ddt(self):
+        """capgen's ``external:`` types have no original-capgen spelling
+        and land on the DDT side: opaque, so not readable from an
+        initial-conditions file."""
+        w = _VarWrapper.from_host_entry(
+            _StubHostEntry(type='external:some_mod:some_t'))
+        self.assertTrue(w.is_ddt())
+
+    def test_unknown_type_raises(self):
+        """A suite-owned ResolvedArg carries no host entry, so no type."""
+        w = _VarWrapper.from_resolved_arg(_StubResolvedArg(source='suite'))
+        with self.assertRaises(ValueError):
+            w.is_ddt()
+
+    def test_resolved_arg_type_comes_from_host_entry(self):
+        arg = _StubResolvedArg()
+        arg.host_entry = _StubHostEntry(type='test_list_t')
+        self.assertTrue(_VarWrapper.from_resolved_arg(arg).is_ddt())
 
 
 class TestFromResolvedArg(unittest.TestCase):
