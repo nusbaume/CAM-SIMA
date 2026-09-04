@@ -30,7 +30,7 @@ subroutine d_p_coupling(cam_runtime_opts, phys_state, phys_tend, dyn_out)
    use gravity_waves_sources,     only: gws_src_fnct, gws_src_vort
    use hycoef,                    only: hyai, ps0
    use ccpp_constituent_prop_mod, only: ccpp_constituent_prop_ptr_t
-   use cam_ccpp_cap,              only: cam_constituents_array
+   use cam_ccpp_cap,              only: ccpp_constituents_array
    use cam_constituents,          only: const_name, num_advected
    use spmd_dyn,                  only: local_dp_map
    use spmd_utils,                only: iam
@@ -307,7 +307,7 @@ subroutine p_d_coupling(cam_runtime_opts, phys_state, phys_tend, dyn_in, tl_f, t
 
    ! Convert the physics output state into the dynamics input state.
    use shr_kind_mod,     only: shr_kind_cl
-   use cam_ccpp_cap,     only: cam_constituents_array
+   use cam_ccpp_cap,     only: ccpp_constituents_array
    use cam_constituents, only: num_advected
    use cam_constituents, only: const_is_wet
    use spmd_dyn,         only: local_dp_map
@@ -576,6 +576,8 @@ subroutine derived_phys_dry(cam_runtime_opts, phys_state, phys_tend)
    ! Finally compute energy and water column integrals of the physics input state.
 
    use ccpp_constituent_prop_mod, only: ccpp_constituent_prop_ptr_t
+   use cam_ccpp_cap,      only: ccpp_constituents_array
+   use cam_ccpp_cap,      only: ccpp_model_const_properties
    use cam_constituents,  only: num_advected, num_constituents
    use cam_constituents,  only: const_is_wet
    use cam_constituents,  only: const_get_index

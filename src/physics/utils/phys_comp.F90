@@ -181,9 +181,8 @@ CONTAINS
       use cam_thermo,                only: cam_thermo_init
       use cam_thermo_formula,        only: cam_thermo_formula_init
       use physics_types,             only: allocate_physics_types_fields
-      use cam_ccpp_cap,              only: cam_ccpp_physics_initialize
-      use cam_ccpp_cap,              only: cam_constituents_array
-      use cam_ccpp_cap,              only: cam_model_const_properties
+      use cam_ccpp_cap,              only: ccpp_constituents_array
+      use cam_ccpp_cap,              only: ccpp_model_const_properties
       use cam_constituents,          only: num_constituents
       use cam_constituents,          only: const_mark_as_initialized
       use cam_constituents,          only: const_is_initialized
@@ -244,8 +243,8 @@ CONTAINS
       ! For null dycores, snapshots are read from the physics grid, so nothing is marked
       ! as initialized at this point.
       if (cam_runtime_opts%get_dycore() /= 'null') then
-         const_props => cam_model_const_properties()
-         const_array => cam_constituents_array()
+         const_props => ccpp_model_const_properties()
+         const_array => ccpp_constituents_array()
          do const_idx = 1, num_constituents
             ! Constituents the dycore already marked in (1) need no value check:
             if (const_is_initialized(const_idx)) then

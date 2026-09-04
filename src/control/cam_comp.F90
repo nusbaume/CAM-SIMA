@@ -736,7 +736,7 @@ contains
       ! objects) and before history_init_files (registers history fields).
       use radiative_aerosol,     only: rad_aer_init
       use aerosol_instances_mod, only: aerosol_instances_init, aerosol_instances_init_states
-      use cam_ccpp_cap,          only: cam_constituents_array
+      use cam_ccpp_cap,          only: ccpp_constituents_array
       use ccpp_kinds,            only: kind_phys
       use phys_vars_init_check, only: mark_as_initialized
 
@@ -749,7 +749,7 @@ contains
       call aerosol_instances_init()
 
       ! Wire constituents pointer into aerosol state objects
-      constituents => cam_constituents_array()
+      constituents => ccpp_constituents_array()
       call aerosol_instances_init_states(constituents)
 
       ! Mark module vars part of radiative_aerosol_definitions as initialized.
