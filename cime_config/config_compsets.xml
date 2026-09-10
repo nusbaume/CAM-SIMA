@@ -104,6 +104,12 @@
     <lname>2000_CAM%MPASCP_SLND_SICE_SOCN_SROF_SGLC_SWAV</lname>
   </compset>
 
+  <!-- CAM-SIMA compset for running with water tracers/isotopes (EXPERIMENTAL) -->
+  <compset>
+    <alias>FWISO</alias>
+    <lname>2000_CAM%WISO_SLND_SICE_SOCN_SROF_SGLC_SWAV</lname>
+  </compset>
+
   <!-- ENTRIES -->
 
   <entries>

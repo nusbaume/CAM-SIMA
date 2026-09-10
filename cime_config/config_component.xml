@@ -14,6 +14,7 @@
     <desc atm="CAM40">CAM-SIMA with cam4 physics:</desc>
     <desc atm="CAM[%ADIAB][%PHYSTEST][%DABIP04][%TJ16][%HS94][%KESSLER]">CAM-SIMA simplified and non-versioned physics:</desc>
     <desc atm="CAM%MPASCP">CAM-SIMA with MPAS-like "convection-permitting" physics suite (EXPERIMENTAL)</desc>
+    <desc atm="CAM%WISO">CAM-SIMA with water tracer and isotope physics (EXPERIMENTAL)</desc>
 
   <!--
     ===============
@@ -92,6 +93,9 @@
       <!-- CAM with MPAS-like "convection-permitting" physics suite (EXPERIMENTAL) -->
       <!-- Temporarily using analytic initial condition during development -->
       <value compset="CAM%MPASCP">--physics-suites convection_permitting --analytic-ic</value>
+
+      <!-- CAM-SIMA with water isotope/tracer capabilities -->
+      <value compset="CAM%WISO">--physics-suites water_tracers</value>
     </values>
     <group>build_component_cam</group>
     <file>env_build.xml</file>
