@@ -625,22 +625,34 @@ contains
       use phys_comp,                 only: phys_suite_name
       use cam_constituents,          only: cam_constituents_init
       use cam_constituents,          only: const_set_qmin, const_get_index
+      use cam_constituents,          only: num_water_tracer_constituents
+      use cam_constituents,          only: register_water_tracer_constituents
       use ccpp_kinds,                only: kind_phys
       use ccpp_constituent_prop_mod, only: ccpp_constituent_prop_ptr_t
+      use ccpp_constituent_prop_mod, only: ccpp_constituent_properties_t
       use cam_ccpp_cap,              only: ccpp_register_constituents
       use cam_ccpp_cap,              only: ccpp_number_constituents
       use cam_ccpp_cap,              only: ccpp_model_const_properties
       use cam_ccpp_cap,              only: ccpp_is_scheme_constituent
+      use cam_ccpp_cap,              only: ccpp_scheme_const_properties
+      use shr_wtracers_mod,          only: shr_wtracers_initialized
+      use shr_wtracers_mod,          only: shr_wtracers_present
 
       ! Dummy arguments
       type(runtime_options), intent(in) :: cam_runtime_opts
       ! Local variables
-      logical                                        :: is_constituent
-      integer                                        :: num_advect
-      integer                                        :: const_idx
-      integer                                        :: errflg
-      character(len=512)                             :: errmsg
-      type(ccpp_constituent_prop_ptr_t), pointer     :: const_props(:)
+      logical                                          :: is_constituent
+      logical                                          :: wtracers_present
+      integer                                          :: num_advect
+      integer                                          :: const_idx
+      integer                                          :: num_host_const
+      integer                                          :: num_wtracer_const
+      integer                                          :: host_idx
+      integer                                          :: errflg
+      character(len=512)                               :: errmsg
+      type(ccpp_constituent_prop_ptr_t), pointer       :: const_props(:)
+      type(ccpp_constituent_properties_t), allocatable :: phys_scheme_const_props(:)
+      type(ccpp_constituent_properties_t), allocatable :: host_const_props(:)
       character(len=*), parameter :: subname = 'cam_register_constituents: '
 
       ! Initalize error flag and message:
@@ -655,18 +667,24 @@ contains
          call endrun(subname//trim(errmsg), file=__FILE__, line=__LINE__)
       end if
 
-      !If not requested by the physics, then add water vapor to the
-      !constituents object:
+      ! Build the constituents the host is adding itself.  Water vapor is only
+      ! added here if the physics did not already request it:
       !-------------------------------------------
       if (.not. is_constituent) then
+         num_host_const = 1
+      else
+         num_host_const = 0
+      end if
 
-         ! Allocate host_constituents object:
-         allocate(host_constituents(1), stat=errflg, errmsg=errmsg)
-         call check_allocate(errflg, subname, 'host_constituents(1)',                   &
-                             file=__FILE__, line=__LINE__, errmsg=errmsg)
+      allocate(host_const_props(num_host_const), stat=errflg, errmsg=errmsg)
+      call check_allocate(errflg, subname, 'host_const_props(num_host_const)', &
+                          file=__FILE__, line=__LINE__, errmsg=errmsg)
 
-         ! Register the constituents so they can be advected:
-         call host_constituents(1)%instantiate( &
+      if (num_host_const == 1) then
+         ! Register the constituents so they can be advected.  Water vapor is
+         ! also flagged as a water species here for use in registering water
+         ! water tracers if needed.
+         call host_const_props(1)%instantiate(           &
               std_name=wv_stdname,                       &
               long_name=wv_longname,                     &
               units='kg kg-1',                           &
@@ -674,17 +692,70 @@ contains
               vertical_dim='vertical_layer_dimension',   &
               advected=.true.,                           &
               diag_name='Q',                             &
-           errcode=errflg, errmsg=errmsg)
+              water_species=.true.,                      &
+              errcode=errflg, errmsg=errmsg)
 
          if (errflg /= 0) then
             call endrun(subname//trim(errmsg), file=__FILE__, line=__LINE__)
          end if
+      end if
+      !-------------------------------------------
+
+      ! Check whether this CAM-SIMA run is using water tracers:
+      if (shr_wtracers_initialized()) then
+         wtracers_present = shr_wtracers_present()
       else
-         ! Allocate zero-size object so nothing is added
-         ! to main constituents object:
-         allocate(host_constituents(0), stat=errflg, errmsg=errmsg)
-         call check_allocate(errflg, subname, 'host_constituents(0)',                   &
-                             file=__FILE__, line=__LINE__, errmsg=errmsg)
+         wtracers_present = .false.
+      end if
+
+      ! If running with water tracers, then determine
+      ! the total number of new tracer constituents:
+      !-------------------------------------------
+      num_wtracer_const = 0
+      if (wtracers_present) then
+
+         ! Ask the physics which constituents it registered during the CCPP
+         ! register phase.  This is only valid between 'ccpp_register' and
+         ! 'ccpp_register_constituents', which is the last point at which the
+         ! host can still declare constituents of its own:
+         call ccpp_scheme_const_properties(phys_suite_name,                   &
+              phys_scheme_const_props, errcode=errflg, errmsg=errmsg)
+
+         if (errflg /= 0) then
+            call endrun(subname//trim(errmsg), file=__FILE__, line=__LINE__)
+         end if
+
+         ! Determine how many new constituents are needed to carry water
+         ! tracers for the water species the host and the physics registered:
+         num_wtracer_const =                                                  &
+              num_water_tracer_constituents(phys_scheme_const_props,          &
+                                            host_const_props)
+      end if
+      !-------------------------------------------
+
+      ! Allocate host_constituents object and fill in the host's own
+      ! constituents:
+      !-------------------------------------------
+      allocate(host_constituents(num_host_const + num_wtracer_const),         &
+               stat=errflg, errmsg=errmsg)
+      call check_allocate(errflg, subname,                                    &
+                          'host_constituents(num_host_const + num_wtracer_const)', &
+                          file=__FILE__, line=__LINE__, errmsg=errmsg)
+
+      do host_idx = 1, num_host_const
+         host_constituents(host_idx) = host_const_props(host_idx)
+      end do
+
+      ! Add a water tracer constituent for every (water tracer, water species)
+      ! pair, which must happen before the constituents object is locked below:
+      if (num_wtracer_const > 0) then
+         call register_water_tracer_constituents(phys_scheme_const_props,     &
+              host_constituents, num_host_const + 1)
+      end if
+
+      deallocate(host_const_props)
+      if (allocated(phys_scheme_const_props)) then
+         deallocate(phys_scheme_const_props)
       end if
       !-------------------------------------------
 
