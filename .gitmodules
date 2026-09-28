@@ -1,7 +1,7 @@
 [submodule "ccpp-framework"]
         path          = ccpp_framework
 	url           = https://github.com/nusbaume/ccpp-framework
-        fxtag         = 77644cb3331d9d381c417c217f940b52e8d7dc71
+        fxtag         = 19e390328ddb8b7f154a08734a238c87a753753b
         fxrequired    = AlwaysRequired
         fxDONOTUSEurl = https://github.com/NCAR/ccpp-framework
 [submodule "history"]
@@ -20,7 +20,7 @@
 [submodule "ncar-physics"]
         path          = src/physics/ncar_ccpp
 	url           = https://github.com/nusbaume/atmospheric_physics
-	fxtag         = a96809e71eeb32d6269189b55bffcf3ffbafd399
+	fxtag         = d843763765a5b8924b46063efe6f2ac09618b0ce
         fxrequired    = AlwaysRequired
         fxDONOTUSEurl = https://github.com/ESCOMP/atmospheric_physics
 [submodule "rrtmgp-data"]

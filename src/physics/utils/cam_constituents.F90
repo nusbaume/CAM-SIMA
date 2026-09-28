@@ -29,6 +29,7 @@ module cam_constituents
    ! Public water tracer functions
    public :: num_water_tracer_constituents      ! Number of new water tracer constituents
    public :: register_water_tracer_constituents ! Instantiate the water tracer constituents
+   public :: water_tracer_dycore_mapping        ! Water tracers needing initial values
 
    ! Private array of constituent properties (for property interface functions)
    type(ccpp_constituent_prop_ptr_t), pointer :: const_props(:) => NULL()
@@ -39,6 +40,12 @@ module cam_constituents
    ! phys_vars_init_check cannot track these because it only covers registry variables
    ! and not runtime constituents (which is why we have to use indices here:)
    logical, allocatable :: const_initialized(:)
+
+   ! Total number of water tracer constituents, which is counted once the
+   ! constituent table has been locked (see 'set_water_tracer_bulk_indices').
+   ! No mapping of water tracers can ever hold more entries than this, so it
+   ! is also the size which such mapping arrays are allocated to.
+   integer, private :: num_water_tracers = 0
 
    ! Namelist variable
    ! Only allow initialization once
@@ -146,6 +153,11 @@ CONTAINS
 
       initialized = .true.
 
+      ! Now that the constituent table is locked, and so every constituent
+      ! index is final, record which bulk water species each water tracer is
+      ! tracking:
+      call set_water_tracer_bulk_indices()
+
       !If log level is verbose, then print out
       !the names/order of all registered constituents:
       if ((debug_output >= DEBUGOUT_VERBOSE) .and. masterproc) then
@@ -162,6 +174,78 @@ CONTAINS
       end if
 
    end subroutine cam_constituents_init
+
+   !#######################################################################
+
+   subroutine set_water_tracer_bulk_indices()
+      use cam_abortutils, only: endrun
+      use string_utils,   only: to_str
+      use ccpp_constituent_prop_mod, only: stdname_len
+
+      ! Set the 'bulk_water_index' property of every water tracer constituent
+      ! to the constituent index of the bulk water species it tracks, which
+      ! is found by looking up the tracer's 'bulk_water_name' property.
+      ! This must be called after the constituent table has been locked, as
+      ! constituent indices are not final until then.
+      !
+      ! The module-level count of water tracer constituents,
+      ! <num_water_tracers>, is also set here, as every constituent is
+      ! already being checked for being a water tracer.
+
+      ! Local variables
+      integer                     :: tracer_idx
+      integer                     :: bulk_idx
+      integer                     :: err_code
+      logical                     :: is_tracer
+      character(len=256)          :: err_msg
+      character(len=stdname_len)  :: bulk_name
+      character(len=*), parameter :: subname = 'set_water_tracer_bulk_indices: '
+
+      num_water_tracers = 0
+
+      do tracer_idx = 1, num_constituents
+
+         ! Only water tracers track a bulk water species:
+         call const_props(tracer_idx)%is_water_tracer(is_tracer, err_code,    &
+              err_msg)
+         if (err_code /= 0) then
+            call endrun(subname//"Error "//to_str(err_code)//": "//           &
+                 trim(err_msg), file=__FILE__, line=__LINE__)
+         end if
+         if (.not. is_tracer) then
+            cycle
+         end if
+
+         num_water_tracers = num_water_tracers + 1
+
+         ! Each water tracer was registered with the standard name of the bulk
+         ! water species it tracks, so look that constituent up by name:
+         call const_props(tracer_idx)%bulk_water_name(bulk_name, err_code,    &
+              err_msg)
+         if (err_code /= 0) then
+            call endrun(subname//"Error "//to_str(err_code)//": "//           &
+                 trim(err_msg), file=__FILE__, line=__LINE__)
+         end if
+         if (len_trim(bulk_name) == 0) then
+            call endrun(subname//"water tracer '"//                           &
+                 trim(const_name(tracer_idx))//"' has no 'bulk_water_name' "//&
+                 "property set", file=__FILE__, line=__LINE__)
+         end if
+
+         call const_get_index(trim(bulk_name), bulk_idx, abort=.true.,        &
+              caller=subname)
+
+         ! Note that this will fail if the index has already been set:
+         call const_props(tracer_idx)%set_bulk_water_index(bulk_idx,          &
+              err_code, err_msg)
+         if (err_code /= 0) then
+            call endrun(subname//"Error "//to_str(err_code)//": "//           &
+                 trim(err_msg), file=__FILE__, line=__LINE__)
+         end if
+
+      end do
+
+   end subroutine set_water_tracer_bulk_indices
 
    !#######################################################################
 
@@ -1007,8 +1091,11 @@ CONTAINS
       ! constituent for every (water tracer, registered water species) pair.
       ! Each new constituent carries the properties of the water species it
       ! tracks, with the tracer name prepended to the standard, diagnostic and
-      ! long names, with the 'water_tracer' property set, and with the
-      ! prescribed ratio taken from the CESM-provided initial ratio.
+      ! long names, with the 'water_tracer' property set, with the
+      ! prescribed ratio taken from the CESM-provided initial ratio, and with
+      ! 'bulk_water_name' set to the standard name of the tracked species
+      ! itself, so each tracer records which bulk water constituent it
+      ! follows.
       !
       ! Water species are taken both from <phys_scheme_const_props>, the
       ! constituents the physics registered, and from
@@ -1197,6 +1284,7 @@ CONTAINS
                  mixing_ratio_type=trim(mix_type),                            &
                  water_tracer=.true.,                                         &
                  prescribed_ratio=ratio_val,                                  &
+                 bulk_water_name=trim(std_name),                              &
                  errcode=err_code, errmsg=err_msg)
             if (err_code /= 0) then
                call endrun(subname//"Error "//to_str(err_code)//": "//        &
@@ -1207,6 +1295,163 @@ CONTAINS
       end do
 
    end subroutine register_water_tracer_constituents
+
+   subroutine water_tracer_dycore_mapping(advected_const_index, tracer_slot,  &
+        bulk_slot, tracer_ratio, num_pairs)
+      use cam_abortutils,            only: endrun, check_allocate
+      use cam_logfile,               only: iulog, debug_output
+      use cam_logfile,               only: DEBUGOUT_VERBOSE
+      use spmd_utils,                only: masterproc
+      use string_utils,              only: to_str
+      use ccpp_constituent_prop_mod, only: int_unassigned, kphys_unassigned
+
+      ! Build the list of water tracer constituents whose initial values still
+      ! need to be set from the bulk water species that each one tracks.  This
+      ! is for a caller which holds constituent data indexed by a dycore's
+      ! advected constituent index, e.g. the dycore itself while it is reading
+      ! initial conditions.
+      !
+      ! For every entry <n> of the returned mapping the caller should set
+      !
+      !    q(..., tracer_slot(n)) = q(..., bulk_slot(n)) * tracer_ratio(n)
+      !
+      ! (clipped at the tracer's minimum value) and then mark the constituent
+      ! advected_const_index(tracer_slot(n)) as initialized.  Bulk water
+      ! species are never themselves water tracers, so the entries of the
+      ! mapping may be applied in any order.
+      !
+      ! A water tracer which is already marked as initialized is left out of
+      ! the mapping, so a tracer that was found on the initial conditions file
+      ! keeps the values which were read for it.
+      !
+
+      ! Dummy arguments
+
+      ! Constituent index of each of the caller's advected slots, so that
+      ! advected_const_index(m) is the constituent held in the caller's
+      ! slot <m>:
+      integer,                      intent(in)  :: advected_const_index(:)
+      ! Caller's advected slot holding the water tracer to be initialized:
+      integer,         allocatable, intent(out) :: tracer_slot(:)
+      ! Caller's advected slot holding the bulk water species that the
+      ! water tracer in the matching 'tracer_slot' entry tracks:
+      integer,         allocatable, intent(out) :: bulk_slot(:)
+      ! Ratio of the water tracer to its bulk water species:
+      real(kind_phys), allocatable, intent(out) :: tracer_ratio(:)
+      ! Number of entries which were filled in the three arrays above:
+      integer,                      intent(out) :: num_pairs
+
+      ! Local variables
+      integer                     :: adv_idx
+      integer                     :: num_slots
+      integer                     :: const_idx
+      integer                     :: bulk_const_idx
+      integer                     :: bulk_adv_idx
+      integer                     :: search_idx
+      integer                     :: err_code
+      integer                     :: iret
+      logical                     :: is_tracer
+      real(kind_phys)             :: ratio_val
+      character(len=256)          :: err_msg
+      character(len=*), parameter :: subname = 'water_tracer_dycore_mapping: '
+
+      num_slots = SIZE(advected_const_index)
+
+      allocate(tracer_slot(num_water_tracers), stat=iret, errmsg=err_msg)
+      call check_allocate(iret, subname, 'tracer_slot(num_water_tracers)',    &
+           file=__FILE__, line=__LINE__, errmsg=err_msg)
+      allocate(bulk_slot(num_water_tracers), stat=iret, errmsg=err_msg)
+      call check_allocate(iret, subname, 'bulk_slot(num_water_tracers)',      &
+           file=__FILE__, line=__LINE__, errmsg=err_msg)
+      allocate(tracer_ratio(num_water_tracers), stat=iret, errmsg=err_msg)
+      call check_allocate(iret, subname, 'tracer_ratio(num_water_tracers)',   &
+           file=__FILE__, line=__LINE__, errmsg=err_msg)
+
+      num_pairs = 0
+
+      do adv_idx = 1, num_slots
+         const_idx = advected_const_index(adv_idx)
+         if (.not. check_index_bounds(const_idx, subname)) then
+            cycle
+         end if
+
+         ! Only water tracers are initialized from another constituent:
+         call const_props(const_idx)%is_water_tracer(is_tracer, err_code,     &
+              err_msg)
+         if (err_code /= 0) then
+            call endrun(subname//"Error "//to_str(err_code)//": "//           &
+                 trim(err_msg), file=__FILE__, line=__LINE__)
+         end if
+         if (.not. is_tracer) then
+            cycle
+         end if
+
+         ! A tracer which already has initial values, e.g. because it was
+         ! found on the initial conditions file, is left exactly as it was:
+         if (const_is_initialized(const_idx)) then
+            cycle
+         end if
+
+         ! Extract bulk water constituent index associated with the given
+         ! water tracer constituent:
+         call const_props(const_idx)%bulk_water_index(bulk_const_idx,         &
+              err_code, err_msg)
+         if (err_code /= 0) then
+            call endrun(subname//"Error "//to_str(err_code)//": "//           &
+                 trim(err_msg), file=__FILE__, line=__LINE__)
+         end if
+         if (bulk_const_idx == int_unassigned) then
+            call endrun(subname//"water tracer '"//                           &
+                 trim(const_name(const_idx))//"' has no 'bulk_water_index' "//&
+                 "property set", file=__FILE__, line=__LINE__)
+         end if
+         if (.not. check_index_bounds(bulk_const_idx, subname)) then
+            cycle
+         end if
+
+         ! The caller can only read the bulk water species if it is holding it
+         ! as well, so find which of the caller's slots that species is in:
+         bulk_adv_idx = -1
+         do search_idx = 1, num_slots
+            if (advected_const_index(search_idx) == bulk_const_idx) then
+               bulk_adv_idx = search_idx
+               exit
+            end if
+         end do
+         if (bulk_adv_idx < 1) then
+            call endrun(subname//"water tracer '"//                           &
+                 trim(const_name(const_idx))//"' tracks bulk water species '" &
+                 //trim(const_name(bulk_const_idx))//"', which the caller "// &
+                 "is not holding", file=__FILE__, line=__LINE__)
+         end if
+
+         call const_props(const_idx)%prescribed_ratio(ratio_val, err_code,    &
+              err_msg)
+         if (err_code /= 0) then
+            call endrun(subname//"Error "//to_str(err_code)//": "//           &
+                 trim(err_msg), file=__FILE__, line=__LINE__)
+         end if
+         if (ratio_val == kphys_unassigned) then
+            call endrun(subname//"water tracer '"//                           &
+                 trim(const_name(const_idx))//"' has no 'prescribed_ratio' "//&
+                 "property set", file=__FILE__, line=__LINE__)
+         end if
+
+         num_pairs               = num_pairs + 1
+         tracer_slot(num_pairs)  = adv_idx
+         bulk_slot(num_pairs)    = bulk_adv_idx
+         tracer_ratio(num_pairs) = ratio_val
+
+         if ((debug_output >= DEBUGOUT_VERBOSE) .and. masterproc) then
+            write(iulog, *) subname, "setting water tracer '",                &
+                 trim(const_name(const_idx)), "' to ", ratio_val,             &
+                 " * '", trim(const_name(bulk_const_idx)), "'"
+         end if
+      end do
+
+   end subroutine water_tracer_dycore_mapping
+
+   !#######################################################################
 
    !#######################################################################
 

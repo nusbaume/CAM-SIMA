@@ -1348,6 +1348,7 @@ subroutine read_inidat(dyn_in)
    use cam_constituents,     only: num_advected, const_name
    use cam_constituents,     only: const_is_water_species, const_qmin, const_is_wet
    use cam_constituents,     only: const_mark_as_initialized
+   use cam_constituents,     only: water_tracer_dycore_mapping
    use dyn_tests_utils,      only: vcoord=>vc_dry_pressure
 
    !This should eventually be replaced with the "const_diag_name" function from "cam_constituents".
@@ -1414,6 +1415,10 @@ subroutine read_inidat(dyn_in)
    character(len=cl)                :: errmsg
    character(len=*), parameter      :: subname='READ_INIDAT'
 
+   integer,  allocatable            :: wtracer_slot(:)     ! advected idx of tracer to set
+   integer,  allocatable            :: wbulk_slot(:)       ! advected idx of tracked species
+   real(r8), allocatable            :: wtracer_ratio(:)    ! prescribed tracer ratio
+   integer                          :: num_wtracer_pairs
    character(len=cl), allocatable   :: const_ic_name(:)
    character(len=cl)                :: std_name
    integer                          :: const_ic_names_idx
@@ -1831,6 +1836,28 @@ subroutine read_inidat(dyn_in)
       end do
 
    end do ! num_advected
+
+   ! Any water tracer which was not found on the initial conditions file above
+   ! is initialized here from the bulk water species it tracks.  Doing it here
+   ! means each tracer goes through the boundary exchange, the wet to dry
+   ! conversion and the dry mass scaling below along with its bulk species, and
+   ! so is also picked up by the GLL and fvm arrays built from 'qtmp' further
+   ! down:
+   call water_tracer_dycore_mapping(advected_constituent_index,               &
+        wtracer_slot, wbulk_slot, wtracer_ratio, num_wtracer_pairs)
+
+   do nq = 1, num_wtracer_pairs
+      m_cnst = advected_constituent_index(wtracer_slot(nq))
+      qtmp(:,:,:,:,wtracer_slot(nq)) = max(const_qmin(m_cnst),                &
+           qtmp(:,:,:,:,wbulk_slot(nq)) * wtracer_ratio(nq))
+
+      ! Tell the physics initial conditions read to leave this tracer alone:
+      call const_mark_as_initialized(m_cnst)
+   end do
+
+   deallocate(wtracer_slot)
+   deallocate(wbulk_slot)
+   deallocate(wtracer_ratio)
 
    ! Cleanup
    deallocate(dbuf3)
