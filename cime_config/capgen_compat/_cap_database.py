@@ -26,6 +26,19 @@ _PHASE_ALIAS = {
 }
 
 
+# Capgen phase keys in execution order, and the original-capgen name
+# each is reported under by :meth:`_SuiteGroup.phase` (write_init_files
+# compares against original-capgen spellings, e.g. ``'initialize'``).
+_PHASE_ORDER = (
+    ('register',       'register'),
+    ('init',           'initialize'),
+    ('timestep_init',  'timestep_initial'),
+    ('run',            'run'),
+    ('timestep_final', 'timestep_final'),
+    ('final',          'finalize'),
+)
+
+
 class _HostDict:
     """Host-variable dictionary with ``find_variable(stdname)`` lookup.
 
@@ -124,6 +137,64 @@ def _walk_calls(items):
             yield from _walk_calls(item.calls)
 
 
+class _SuiteScheme:
+    """One scheme call; ``variable_list()`` wraps its args in call order."""
+
+    def __init__(self, call):
+        self.name = call.scheme_name
+        self._args = list(call.args)
+
+    def variable_list(self) -> List[_VarWrapper]:
+        return [_VarWrapper.from_resolved_arg(a) for a in self._args]
+
+
+class _SuiteGroup:
+    """One (group, phase) slice of a suite, mirroring original capgen's
+    per-phase ``Group`` (``phase()`` + ``schemes()``)."""
+
+    def __init__(self, name: str, phase: str, calls: List):
+        self.name = name
+        self._phase = phase
+        self._schemes = [_SuiteScheme(c) for c in calls]
+
+    def phase(self) -> str:
+        return self._phase
+
+    def schemes(self) -> List[_SuiteScheme]:
+        return list(self._schemes)
+
+
+class _Suite:
+    """Original-capgen-style suite view over a ``SuiteResolution``.
+
+    ``groups`` lists one :class:`_SuiteGroup` per (phase, group) pair,
+    ordered by phase execution order and then by SDF group order, so
+    walking ``groups`` / ``schemes()`` / ``variable_list()`` visits the
+    scheme args in the order the suite calls them.  Suite-level
+    ``<init>`` / ``<final>`` hooks run at the start of ``<suite>_init``
+    and the end of ``<suite>_final`` respectively.
+    """
+
+    def __init__(self, sr):
+        self.name = sr.suite_name
+        self.groups: List[_SuiteGroup] = []
+        init_call = getattr(sr, 'suite_init_call', None)
+        final_call = getattr(sr, 'suite_final_call', None)
+        for phase, orig_phase in _PHASE_ORDER:
+            if phase == 'init' and init_call is not None:
+                self.groups.append(_SuiteGroup(sr.suite_name, orig_phase,
+                                               [init_call]))
+            for group in sr.groups:
+                items = group.phase_calls.get(phase)
+                if items:
+                    self.groups.append(_SuiteGroup(
+                        group.group_name, orig_phase,
+                        list(_walk_calls(items))))
+            if phase == 'final' and final_call is not None:
+                self.groups.append(_SuiteGroup(sr.suite_name, orig_phase,
+                                               [final_call]))
+
+
 class CapDatabase:
     """Original-capgen-style ``cap_database`` facade.
 
@@ -135,6 +206,8 @@ class CapDatabase:
 
     def __init__(self, host_dict, suite_resolutions):
         self._host = _HostDict(host_dict)
+        suite_resolutions = list(suite_resolutions)
+        self._suites = [_Suite(sr) for sr in suite_resolutions]
 
         # Aggregate ResolvedArgs per phase, dedup by
         # (scheme_name, phase, standard_name).
@@ -226,6 +299,10 @@ class CapDatabase:
 
     def host_model_dict(self) -> _HostDict:
         return self._host
+
+    def suite_list(self) -> List[_Suite]:
+        """Return one original-capgen-style suite view per suite."""
+        return list(self._suites)
 
     def call_list(self, phase: str) -> _CallList:
         """Return the per-phase call list.

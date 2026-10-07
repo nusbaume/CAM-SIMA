@@ -1545,7 +1545,7 @@ class WriteInitTest(unittest.TestCase):
                         os.path.join(_INIT_SAMPLES_DIR, "tend_apply.meta")]
         cap_datafile = os.path.join(_TMP_DIR, "datatable_set_before_use.xml")
 
-        host_files = [model_host, out_meta]
+        host_files = [model_host, out_meta, _CONTROL_VARS_META]
 
         # Setup write_init_files inputs:
         vic_name = "phys_vars_init_check_set_before_use.F90"
@@ -1632,7 +1632,7 @@ class WriteInitTest(unittest.TestCase):
                         os.path.join(_INIT_SAMPLES_DIR, "tend_apply.meta")]
         cap_datafile = os.path.join(_TMP_DIR, "datatable_use_before_set.xml")
 
-        host_files = [model_host, out_meta]
+        host_files = [model_host, out_meta, _CONTROL_VARS_META]
 
         # Setup write_init_files inputs:
         vic_name = "phys_vars_init_check_use_before_set.F90"
