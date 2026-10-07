@@ -147,7 +147,7 @@ class HistConfigTest(unittest.TestCase):
         self.assertTrue(os.path.exists(out_source), msg=amsg)
         # Make sure the output file is correct
         amsg = f"{out_source} does not match {out_test}"
-        self.assertTrue(filecmp.cmp(out_test, out_source, shallow='.false.'),
+        self.assertTrue(filecmp.cmp(out_test, out_source, shallow=False),
                         msg=amsg)
 
     def test_multi_user_nl_cam(self):
@@ -187,7 +187,7 @@ class HistConfigTest(unittest.TestCase):
         self.assertTrue(os.path.exists(out_source), msg=amsg)
         # Make sure the output file is correct
         amsg = f"{out_source} does not match {out_test}"
-        self.assertTrue(filecmp.cmp(out_test, out_source, shallow='.false.'),
+        self.assertTrue(filecmp.cmp(out_test, out_source, shallow=False),
                         msg=amsg)
 
     def test_bad_user_nl_cam(self):

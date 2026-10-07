@@ -576,6 +576,8 @@ subroutine derived_phys_dry(cam_runtime_opts, phys_state, phys_tend)
    ! Finally compute energy and water column integrals of the physics input state.
 
    use ccpp_constituent_prop_mod, only: ccpp_constituent_prop_ptr_t
+   use cam_ccpp_cap,      only: cam_constituents_array
+   use cam_ccpp_cap,      only: cam_model_const_properties
    use cam_constituents,  only: num_advected, num_constituents
    use cam_constituents,  only: const_is_wet
    use cam_constituents,  only: const_get_index
