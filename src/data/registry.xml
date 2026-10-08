@@ -516,6 +516,7 @@
       <long_name>current timestep number</long_name>
       <initial_value>0</initial_value>
     </variable>
+
     <!-- Date and time variables -->
     <variable local_name="calday"
               standard_name="fractional_calendar_days_on_end_of_current_timestep"
@@ -537,19 +538,7 @@
               units="s" type = "integer">
       <long_name>number of seconds until next shortwave radiation timestep</long_name>
     </variable>
-    <!-- Error handling variables -->
-    <variable local_name="errcode"
-              standard_name="ccpp_error_code"
-              units="1" type="integer">
-      <long_name>ccpp error code</long_name>
-      <initial_value>0</initial_value>
-    </variable>
-    <variable local_name="errmsg"
-              standard_name="ccpp_error_message"
-              units="none" type="character" kind="len=512">
-      <long_name>ccpp error message</long_name>
-      <initial_value>''</initial_value>
-    </variable>
+
     <!-- SIMA History (diagnostic output) variables -->
     <variable local_name="fillvalue"
               standard_name="fill_value_for_diagnostic_output"
@@ -558,6 +547,7 @@
       <long_name>Fill value for diagnostic/history outputs</long_name>
       <initial_value>1.e36_kind_phys</initial_value>
     </variable>
+
     <!-- Composition-dependent Variables -->
     <variable local_name="cpairv"
               standard_name="composition_dependent_specific_heat_of_dry_air_at_constant_pressure"
@@ -2050,6 +2040,7 @@
       <initial_value>0.0_kind_phys</initial_value>
       <ic_file_input_names>pbuf_RNDST</ic_file_input_names>
     </variable>
+
     <!-- Zhang McFarlane (ZM) Variables -->
     <variable local_name="ql"
               standard_name="in_cloud_water_vapor_mixing_ratio_wrt_moist_air_and_condensed_water_due_to_deep_convection"
@@ -2233,6 +2224,7 @@
       <initial_value>0._kind_phys</initial_value>
       <ic_file_input_names>DES pbuf_DES</ic_file_input_names>
     </variable>
+
     <!-- convective_cloud_water + cloud_water_paths inputs for RRTMGP cloud optics -->
     <variable local_name="effi_external_in"
               standard_name="effective_radius_of_stratiform_cloud_ice_crystal"
@@ -2304,6 +2296,7 @@
       <initial_value>0._kind_phys</initial_value>
       <ic_file_input_names>QRL pbuf_QRL</ic_file_input_names>
     </variable>
+
     <!-- Net radiative flux profiles for persistence across timesteps (including those without radiation) -->
     <variable local_name="fns"
               standard_name="shortwave_net_radiative_flux"
@@ -2487,6 +2480,7 @@
       <dimensions>horizontal_dimension</dimensions>
       <initial_value>0.0_kind_phys</initial_value>
     </variable>
+
     <!-- Variables for "sf_mynn" physics scheme -->
     <variable local_name="mavail"
               standard_name="surface_moisture_availability"
@@ -2502,6 +2496,7 @@
       <dimensions>horizontal_dimension</dimensions>
       <initial_value>273.15_kind_phys</initial_value>
     </variable>
+
     <!-- Variables for "bl_mynn" physics scheme -->
     <variable local_name="nc"
               standard_name="mass_number_concentration_of_cloud_liquid_water_droplets_in_dry_air"
