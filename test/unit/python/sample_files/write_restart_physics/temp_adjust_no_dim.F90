@@ -1,34 +1,29 @@
 !simple demonstration parameterization
 !
 
-MODULE temp_adjust
+module temp_adjust
 
-  USE ccpp_kinds, ONLY: kind_phys
+  use ccpp_kinds, only: kind_phys
 
-  IMPLICIT NONE
-  PRIVATE
+  implicit none
+  private
 
-  PUBLIC :: temp_adjust_init
-  PUBLIC :: temp_adjust_run
-  PUBLIC :: temp_adjust_final
+  public :: temp_adjust_init
+  public :: temp_adjust_run
+  public :: temp_adjust_final
 
-CONTAINS
+contains
 
 !> \section arg_table_temp_adjust_run  Argument Table
 !! \htmlinclude arg_table_temp_adjust_run.html
 !!
-  SUBROUTINE temp_adjust_run(nbox, lev, temp_layer,    &
-    slp, cool_cat_for_each_const, cool_cat_default_for_each_const, &
-    timestep, errmsg, errflg)
-!----------------------------------------------------------------
-   IMPLICIT NONE
+  subroutine temp_adjust_run(nbox, lev, temp_layer,    &
+    slp, timestep, errmsg, errflg)
 !----------------------------------------------------------------
 
    integer,            intent(in)    :: nbox, lev
-   REAL(kind_phys),    intent(inout) :: temp_layer(:, :)
+   real(kind_phys),    intent(inout) :: temp_layer(:, :)
    real(kind_phys),    intent(in)    :: slp(:)
-   real(kind_phys),    intent(inout) :: cool_cat_for_each_const(:,:)
-   real(kind_phys),    intent(in)    :: cool_cat_default_for_each_const(:,:)
    real(kind_phys),    intent(in)    :: timestep
    character(len=512), intent(out)   :: errmsg
    integer,            intent(out)   :: errflg
@@ -51,10 +46,7 @@ CONTAINS
        end do
     end do
 
-    ! every constituent should have a cool cat
-    cool_cat_for_each_const(:,:) = 0._kind_phys
-
-  END SUBROUTINE temp_adjust_run
+  end subroutine temp_adjust_run
 
 !> \section arg_table_temp_adjust_init  Argument Table
 !! \htmlinclude arg_table_temp_adjust_init.html
@@ -86,4 +78,4 @@ CONTAINS
 
   end subroutine temp_adjust_final
 
-END MODULE temp_adjust
+end module temp_adjust

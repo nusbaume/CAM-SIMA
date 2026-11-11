@@ -925,7 +925,7 @@ class SchemeNamelistInfo:
     def nlread_file(self):
         """Return the generated namelist read filename for this
         SchemeNamelistInfo object"""
-        return self._nlread_file
+        return self.__nlread_file
 
     @property
     def nlread_module(self):
@@ -1004,16 +1004,6 @@ class NamelistFiles:
             self.__outdir = os.getcwd()
         else:
             self.__outdir = args.output_dir
-        # end if
-        if logger:
-            if args.debug:
-                loglevel = logging.DEBUG
-            elif args.quiet:
-                loglevel = logging.ERROR
-            else:
-                loglevel = logging.INFO
-            # end if
-            logger.setLevel(loglevel)
         # end if
         self.__scheme_read_file = None
         self.__nlfile_arg = "nlfile"

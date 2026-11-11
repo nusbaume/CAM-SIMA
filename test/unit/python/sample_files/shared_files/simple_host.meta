@@ -1,0 +1,40 @@
+[ccpp-table-properties]
+  name = simple_sub
+  type = host
+[ccpp-arg-table]
+  name = simple_sub
+  type = host
+[ pcols ]
+  standard_name = horizontal_dimension
+  type = integer
+  units = count
+  dimensions = ()
+  protected = True
+[ dtime_phys ]
+  standard_name = timestep_for_physics
+  type = real | kind = kind_phys
+  units = s
+  dimensions = ()
+  protected = True
+[ pver ]
+  standard_name = vertical_layer_dimension
+  long_name = number of vertical layers
+  units = count
+  dimensions = ()
+  type = integer
+  protected = True
+# Framework-managed constituent count.  capgen's resolver needs to
+# find this standard name when a host variable carries
+# ``number_of_ccpp_constituents`` as a dimension (e.g. constituent
+# tendency arrays).  Production CAM-SIMA exposes it from
+# cam_constituents via ``use cam_constituents, only:
+# number_of_ccpp_constituents=>num_constituents``; the test fixture
+# stands it up as a host-table entry so the resolver lookup succeeds
+# without dragging cam_constituents.meta into the test's host_files.
+[ num_consts ]
+  standard_name = number_of_ccpp_constituents
+  long_name = number of CCPP constituents
+  units = count
+  dimensions = ()
+  type = integer
+  protected = True

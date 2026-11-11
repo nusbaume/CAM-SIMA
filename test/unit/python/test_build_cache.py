@@ -37,6 +37,7 @@ _CAM_CONF_DIR = os.path.abspath(os.path.join(_CAM_ROOT_DIR, "cime_config"))
 _PRE_TMP_DIR = os.path.join(_CURRDIR, "tmp")
 _TMP_DIR = os.path.join(_PRE_TMP_DIR, "cam_build_cache")
 _SAMPLES_DIR = os.path.join(_CURRDIR, "sample_files", "build_cache_files")
+_SHARED_DIR = os.path.join(_CURRDIR, "sample_files", "shared_files")
 _WRITE_INIT_DIR = os.path.join(_CURRDIR, "sample_files", "write_init_files")
 # capgen compatibility layer (flat-module shims + adapter):
 _COMPAT_DIR = os.path.join(_CAM_CONF_DIR, "capgen_compat")
@@ -442,7 +443,7 @@ class CamBuildCacheTestRoutine(unittest.TestCase):
         #Update registry fields:
         test_cache.update_registry(tmp_test_reg, [tmp_test_reg],
                                    dycore, [tmp_test_reg], ic_names, constituents,
-                                   vars_init_value)
+                                   {}, vars_init_value)
 
         #Write updated fields to build cache file:
         test_cache.write()
@@ -470,7 +471,7 @@ class CamBuildCacheTestRoutine(unittest.TestCase):
         #Set path to registry generator file listed in build_cache file.
         #Please note that in this sample file the registry XML file is listed,
         #and not a python file as would normally be the case:
-        reg_file = os.path.join(_WRITE_INIT_DIR, "simple_reg.xml")
+        reg_file = os.path.join(_SHARED_DIR, "simple_reg.xml")
 
         #Create new  build cache object:
         test_cache = BuildCacheCAM(cache_file)
@@ -497,7 +498,7 @@ class CamBuildCacheTestRoutine(unittest.TestCase):
         #Set path to registry generator file listed in build_cache file.
         #Please note that in this sample file the registry XML file is listed,
         #and not a python file as would normally be the case:
-        reg_file = os.path.join(_WRITE_INIT_DIR, "simple_reg.xml")
+        reg_file = os.path.join(_SHARED_DIR, "simple_reg.xml")
 
         #Create new  build cache object:
         test_cache = BuildCacheCAM(cache_file)
@@ -527,7 +528,7 @@ class CamBuildCacheTestRoutine(unittest.TestCase):
         #Set path to registry generator file listed in build_cache file.
         #Please note that in this sample file the registry XML file is listed,
         #and not a python file as would normally be the case:
-        reg_file = os.path.join(_WRITE_INIT_DIR, "simple_reg.xml")
+        reg_file = os.path.join(_SHARED_DIR, "simple_reg.xml")
 
         #Set path to "new" registry file:
         new_file = os.path.join(_WRITE_INIT_DIR, "param_reg.xml")
@@ -558,7 +559,7 @@ class CamBuildCacheTestRoutine(unittest.TestCase):
         #Set path to registry generator file listed in build_cache file.
         #Please note that in this sample file the registry XML file is listed,
         #and not a python file as would normally be the case:
-        reg_file = os.path.join(_WRITE_INIT_DIR, "simple_reg.xml")
+        reg_file = os.path.join(_SHARED_DIR, "simple_reg.xml")
 
         #Set path to "new" registry file:
         new_file = os.path.join(_WRITE_INIT_DIR, "param_reg.xml")
@@ -644,7 +645,7 @@ class CamBuildCacheTestRoutine(unittest.TestCase):
         cache_file = os.path.join(_WRITE_INIT_DIR, "simple_build_cache_template.xml")
 
         #Set path to Suite Definition File (SDF) listed in build_cache file:
-        sdf_file = os.path.join(_WRITE_INIT_DIR, "suite_simple.xml")
+        sdf_file = os.path.join(_SHARED_DIR, "suite_simple.xml")
 
         #Set path to physics scheme meta file:
         scheme_meta_file = os.path.join(_WRITE_INIT_DIR, "temp_adjust_scalar.meta")
@@ -674,7 +675,7 @@ class CamBuildCacheTestRoutine(unittest.TestCase):
         cache_file = os.path.join(_WRITE_INIT_DIR, "simple_build_cache_template.xml")
 
         #Set path to Suite Definition File (SDF) listed in build_cache file:
-        sdf_file = os.path.join(_WRITE_INIT_DIR, "suite_simple.xml")
+        sdf_file = os.path.join(_SHARED_DIR, "suite_simple.xml")
 
         #Set path to physics scheme meta file:
         scheme_meta_file = os.path.join(_WRITE_INIT_DIR, "temp_adjust_scalar.meta")
@@ -707,7 +708,7 @@ class CamBuildCacheTestRoutine(unittest.TestCase):
         cache_file = os.path.join(_WRITE_INIT_DIR, "simple_build_cache_template.xml")
 
         #Set path to Suite Definition File (SDF) listed in build_cache file:
-        sdf_file = os.path.join(_WRITE_INIT_DIR, "suite_simple.xml")
+        sdf_file = os.path.join(_SHARED_DIR, "suite_simple.xml")
 
         #Set path to physics scheme meta file:
         scheme_meta_file = os.path.join(_WRITE_INIT_DIR, "temp_adjust_scalar.meta")
@@ -741,7 +742,7 @@ class CamBuildCacheTestRoutine(unittest.TestCase):
 
         #Set path to "new" Suite Definition File (SDF), which in this case is actually
         #just a registry file:
-        new_sdf_file = os.path.join(_WRITE_INIT_DIR, "simple_reg.xml")
+        new_sdf_file = os.path.join(_SHARED_DIR, "simple_reg.xml")
 
         #Set path to physics scheme meta file:
         scheme_meta_file = os.path.join(_WRITE_INIT_DIR, "temp_adjust_scalar.meta")
@@ -771,7 +772,7 @@ class CamBuildCacheTestRoutine(unittest.TestCase):
         cache_file = os.path.join(_WRITE_INIT_DIR, "simple_build_cache_template.xml")
 
         #Set path to Suite Definition File (SDF) listed in build_cache file:
-        sdf_file = os.path.join(_WRITE_INIT_DIR, "suite_simple.xml")
+        sdf_file = os.path.join(_SHARED_DIR, "suite_simple.xml")
 
         #Set path to "new" physics scheme meta file:
         new_scheme_meta_file = os.path.join(_WRITE_INIT_DIR, "temp_adjust_param.meta")
@@ -801,7 +802,7 @@ class CamBuildCacheTestRoutine(unittest.TestCase):
         cache_file = os.path.join(_WRITE_INIT_DIR, "simple_build_cache_template.xml")
 
         #Set path to Suite Definition File (SDF) listed in build_cache file:
-        sdf_file = os.path.join(_WRITE_INIT_DIR, "suite_simple.xml")
+        sdf_file = os.path.join(_SHARED_DIR, "suite_simple.xml")
 
         #Set path to physics scheme meta file:
         scheme_meta_file = os.path.join(_WRITE_INIT_DIR, "temp_adjust_scalar.meta")
@@ -873,7 +874,7 @@ class CamBuildCacheTestRoutine(unittest.TestCase):
 
         #Set path to "new" file being used as the namelist generator file.  Please
         #note that for simplicity this is still just another registry xml file:
-        new_create_nl_file = os.path.join(_WRITE_INIT_DIR, "simple_reg.xml")
+        new_create_nl_file = os.path.join(_SHARED_DIR, "simple_reg.xml")
 
         #Create new build cache object:
         test_cache = BuildCacheCAM(cache_file)
@@ -943,7 +944,7 @@ class CamBuildCacheTestRoutine(unittest.TestCase):
 
         #Set path to "new" xml file, which is different from the one provided
         #in the cache file:
-        test_reg_file = os.path.join(_WRITE_INIT_DIR, "simple_reg.xml")
+        test_reg_file = os.path.join(_SHARED_DIR, "simple_reg.xml")
 
         #Copy "new" xml file to local "tmp" directory, so that it has the
         #same path and name as the cached file, but different  contents/hash:
@@ -1036,7 +1037,7 @@ class CamBuildCacheTestRoutine(unittest.TestCase):
         #Set path to initialization files generator file listed in build_cache file.
         #Please note that in this sample file the registry XML file is listed,
         #and not a python file as would normally be the case:
-        init_gen_file = os.path.join(_WRITE_INIT_DIR, "simple_reg.xml")
+        init_gen_file = os.path.join(_SHARED_DIR, "simple_reg.xml")
 
         #Create new  build cache object:
         test_cache = BuildCacheCAM(cache_file)
@@ -1063,7 +1064,7 @@ class CamBuildCacheTestRoutine(unittest.TestCase):
 
         #Set path to "new" initialization files generator,
         #which is just a different XML file in this case:
-        new_init_gen_file = os.path.join(_WRITE_INIT_DIR, "suite_simple.xml")
+        new_init_gen_file = os.path.join(_SHARED_DIR, "suite_simple.xml")
 
         #Create new  build cache object:
         test_cache = BuildCacheCAM(cache_file)
