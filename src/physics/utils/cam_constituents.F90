@@ -47,13 +47,6 @@ module cam_constituents
    ! and not runtime constituents (which is why we have to use indices here:)
    logical, allocatable :: const_initialized(:)
 
-   ! Tracks constituents (by index) whose initial values have already been provided,
-   ! e.g., read by the dycore on the dynamics grid, so that
-   ! the initial conditions read does not overwrite them on the physics grid.
-   ! phys_vars_init_check cannot track these because it only covers registry variables
-   ! and not runtime constituents (which is why we have to use indices here:)
-   logical, allocatable :: const_initialized(:)
-
    ! Total number of water tracer constituents, which is counted once the
    ! constituent table has been locked (see 'set_water_tracer_bulk_indices').
    ! No mapping of water tracers can ever hold more entries than this, so it
