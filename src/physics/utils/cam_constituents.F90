@@ -192,7 +192,7 @@ contains
 
    subroutine set_water_tracer_bulk_indices()
       use cam_abortutils, only: endrun
-      use string_utils,   only: to_str
+      use string_utils,   only: to_str, to_lower
       use ccpp_constituent_prop_mod, only: stdname_len
 
       ! Set the 'bulk_water_index' property of every water tracer constituent
@@ -201,6 +201,11 @@ contains
       ! This must be called after the constituent table has been locked, as
       ! constituent indices are not final until then.
       !
+      ! Note that this routine runs before the CCPP constituent data has been
+      ! initialized (i.e. before 'ccpp_initialize_constituents'), so the bulk
+      ! water constituent is found by searching the constituent properties
+      ! directly.
+      !
       ! The module-level count of water tracer constituents,
       ! <num_water_tracers>, is also set here, as every constituent is
       ! already being checked for being a water tracer.
@@ -208,6 +213,7 @@ contains
       ! Local variables
       integer                     :: tracer_idx
       integer                     :: bulk_idx
+      integer                     :: idx
       integer                     :: err_code
       logical                     :: is_tracer
       character(len=256)          :: err_msg
@@ -245,8 +251,18 @@ contains
                  "property set", file=__FILE__, line=__LINE__)
          end if
 
-         call const_get_index(trim(bulk_name), bulk_idx, abort=.true.,        &
-              caller=subname)
+         bulk_idx = -1
+         do idx = 1, num_constituents
+            if (to_lower(trim(const_name(idx))) == to_lower(trim(bulk_name))) then
+               bulk_idx = idx
+               exit
+            end if
+         end do
+         if (bulk_idx < 1) then
+            call endrun(subname//"bulk water constituent '"//trim(bulk_name)//&
+                 "' of water tracer '"//trim(const_name(tracer_idx))//        &
+                 "' not found", file=__FILE__, line=__LINE__)
+         end if
 
          ! Note that this will fail if the index has already been set:
          call const_props(tracer_idx)%set_bulk_water_index(bulk_idx,          &
