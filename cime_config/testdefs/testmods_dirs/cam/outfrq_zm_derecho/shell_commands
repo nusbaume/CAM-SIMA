@@ -1,1 +1,3 @@
  ./xmlchange CAM_CONFIG_OPTS="--dyn none --physics-suites zhang_mcfarlane"
+ ./xmlchange WATER_TRACERS="H2O_TRACER:H2O_HALF"
+
